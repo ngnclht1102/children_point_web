@@ -315,74 +315,74 @@ const DashboardLayout = () => {
   return (
     <Layout>
       <div className='p-6'>
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-6 mb-6'>
+        <div className='mb-6 grid grid-cols-1 gap-6 md:grid-cols-3'>
           {[
-            { label: 'Tổng điểm', value: pointsStatus.currentPoints },
-            { label: 'Đã dùng', value: pointsStatus.allTimeUsedPoints },
+            { label: 'Tổng điểm', value: pointsStatus?.currentPoints || 0 },
+            { label: 'Đã dùng', value: pointsStatus?.allTimeUsedPoints || 0 },
             {
               label: 'Kiếm được hôm nay',
-              value: pointsStatus.todayEarnedPoints,
+              value: pointsStatus?.todayEarnedPoints || 0,
             },
           ].map((stat, index) => (
-            <div key={index} className='bg-white rounded-xl shadow-sm p-6'>
-              <h3 className='text-gray-500 text-sm font-medium'>
+            <div key={index} className='rounded-xl bg-white p-6 shadow-sm'>
+              <h3 className='text-sm font-medium text-gray-500'>
                 {stat.label}
               </h3>
-              <p className='text-3xl font-bold mt-2'>
+              <p className='mt-2 text-3xl font-bold'>
                 {stat.value.toLocaleString()}
               </p>
-              <div className='mt-4 h-32 bg-gradient-to-r from-indigo-500/10 to-indigo-500/5 rounded-lg'></div>
+              <div className='mt-4 h-32 rounded-lg bg-gradient-to-r from-indigo-500/10 to-indigo-500/5'></div>
             </div>
           ))}
         </div>
 
-        <div className='bg-white rounded-xl shadow-sm overflow-hidden mb-6'>
-          <div className='p-6 border-b border-gray-200 bg-gradient-to-r from-indigo-100 to-purple-100'>
-            <h2 className='text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-3'>
+        <div className='mb-6 overflow-hidden rounded-xl bg-white shadow-sm'>
+          <div className='border-b border-gray-200 bg-gradient-to-r from-indigo-100 to-purple-100 p-6'>
+            <h2 className='flex items-center gap-3 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-2xl font-bold text-transparent'>
               <FiTrendingUp className='text-indigo-600' />
               Thử thách được hoàn thành hôm nay
             </h2>
           </div>
-          <div className='p-4 space-y-4'>
+          <div className='space-y-4 p-4'>
             {loadingEarned ? (
-              <div className='text-center py-4'>
+              <div className='py-4 text-center'>
                 <p className='text-gray-500'>
                   Đang tải thử thách được hoàn thành hôm nay...
                 </p>
               </div>
             ) : earnedError ? (
-              <div className='text-center py-4'>
+              <div className='py-4 text-center'>
                 <p className='text-red-500'>{earnedError}</p>
               </div>
-            ) : earnedPointsHistory.length > 0 ? (
-              earnedPointsHistory.map((item: any) => (
+            ) : earnedPointsHistory?.length > 0 ? (
+              earnedPointsHistory?.map((item: any) => (
                 <div
                   key={item.id}
-                  className={`${getRandomGradient()} p-4 rounded-xl border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-102 relative overflow-hidden group`}
+                  className={`${getRandomGradient()} hover:scale-102 group relative transform overflow-hidden rounded-xl border border-gray-100 p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl`}
                 >
-                  <div className='absolute inset-0 opacity-0 group-hover:opacity-20 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 transition-opacity duration-300'></div>
+                  <div className='absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-0 transition-opacity duration-300 group-hover:opacity-20'></div>
                   <div className='relative z-10'>
-                    <div className='flex items-center justify-between mb-3'>
-                      <span className='text-sm font-medium px-3 py-1 rounded-full bg-white/50 backdrop-blur-sm text-indigo-700 shadow-sm border border-indigo-100'>
+                    <div className='mb-3 flex items-center justify-between'>
+                      <span className='rounded-full border border-indigo-100 bg-white/50 px-3 py-1 text-sm font-medium text-indigo-700 shadow-sm backdrop-blur-sm'>
                         ID: {item.id}
                       </span>
-                      <span className='text-green-600 font-bold px-3 py-1 rounded-full bg-white/50 backdrop-blur-sm'>
+                      <span className='rounded-full bg-white/50 px-3 py-1 font-bold text-green-600 backdrop-blur-sm'>
                         +{item.points} điểm
                       </span>
                     </div>
-                    <h3 className='text-lg font-semibold text-gray-800 mb-3'>
+                    <h3 className='mb-3 text-lg font-semibold text-gray-800'>
                       {item.challenge.title}
                     </h3>
                     <div className='space-y-2'>
-                      <div className='flex items-center gap-2 bg-white/50 backdrop-blur-sm rounded-lg px-3 py-1.5'>
-                        <div className='w-2 h-2 rounded-full bg-purple-400 animate-pulse'></div>
+                      <div className='flex items-center gap-2 rounded-lg bg-white/50 px-3 py-1.5 backdrop-blur-sm'>
+                        <div className='h-2 w-2 animate-pulse rounded-full bg-purple-400'></div>
                         <span className='text-sm font-medium'>Ghi chú:</span>
                         <span className='text-sm text-gray-600'>
                           {item.note}
                         </span>
                       </div>
-                      <div className='flex items-center gap-2 bg-white/50 backdrop-blur-sm rounded-lg px-3 py-1.5'>
-                        <div className='w-2 h-2 rounded-full bg-blue-400 animate-pulse'></div>
+                      <div className='flex items-center gap-2 rounded-lg bg-white/50 px-3 py-1.5 backdrop-blur-sm'>
+                        <div className='h-2 w-2 animate-pulse rounded-full bg-blue-400'></div>
                         <span className='text-sm font-medium'>Thời gian:</span>
                         <span className='text-sm text-gray-600'>
                           {new Date(item.createdAt).toLocaleString()}
@@ -393,7 +393,7 @@ const DashboardLayout = () => {
                 </div>
               ))
             ) : (
-              <div className='text-center py-4'>
+              <div className='py-4 text-center'>
                 <p className='text-gray-500'>
                   Chưa có thử thách nào hoàn thành, bé hãy cố gắng hoàn thành
                   thử thách và tích điểm nhé
@@ -403,51 +403,51 @@ const DashboardLayout = () => {
           </div>
         </div>
 
-        <div className='bg-white rounded-xl shadow-sm overflow-hidden mb-6'>
-          <div className='p-6 border-b border-gray-200 bg-gradient-to-r from-indigo-100 to-purple-100'>
-            <h2 className='text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-3'>
+        <div className='mb-6 overflow-hidden rounded-xl bg-white shadow-sm'>
+          <div className='border-b border-gray-200 bg-gradient-to-r from-indigo-100 to-purple-100 p-6'>
+            <h2 className='flex items-center gap-3 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-2xl font-bold text-transparent'>
               <FiGift className='text-indigo-600' />
               Quà đã đổi hôm nay
             </h2>
           </div>
-          <div className='p-4 space-y-4'>
+          <div className='space-y-4 p-4'>
             {loadingHistory ? (
-              <div className='text-center py-4'>
+              <div className='py-4 text-center'>
                 <p className='text-gray-500'>Đang tải lịch sử điểm...</p>
               </div>
             ) : historyError ? (
-              <div className='text-center py-4'>
+              <div className='py-4 text-center'>
                 <p className='text-red-500'>{historyError}</p>
               </div>
-            ) : pointsHistory.length > 0 ? (
-              pointsHistory.map((item: any) => (
+            ) : pointsHistory?.length > 0 ? (
+              pointsHistory?.map((item: any) => (
                 <div
                   key={item.id}
-                  className={`${getRandomGradient()} p-4 rounded-xl border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-102 relative overflow-hidden group`}
+                  className={`${getRandomGradient()} hover:scale-102 group relative transform overflow-hidden rounded-xl border border-gray-100 p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl`}
                 >
-                  <div className='absolute inset-0 opacity-0 group-hover:opacity-20 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 transition-opacity duration-300'></div>
+                  <div className='absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-0 transition-opacity duration-300 group-hover:opacity-20'></div>
                   <div className='relative z-10'>
-                    <div className='flex items-center justify-between mb-3'>
-                      <span className='text-sm font-medium px-3 py-1 rounded-full bg-white/50 backdrop-blur-sm text-indigo-700 shadow-sm border border-indigo-100'>
+                    <div className='mb-3 flex items-center justify-between'>
+                      <span className='rounded-full border border-indigo-100 bg-white/50 px-3 py-1 text-sm font-medium text-indigo-700 shadow-sm backdrop-blur-sm'>
                         ID: {item.id}
                       </span>
-                      <span className='text-red-600 font-bold px-3 py-1 rounded-full bg-white/50 backdrop-blur-sm'>
+                      <span className='rounded-full bg-white/50 px-3 py-1 font-bold text-red-600 backdrop-blur-sm'>
                         -{item.points} điểm
                       </span>
                     </div>
-                    <h3 className='text-lg font-semibold text-gray-800 mb-3'>
+                    <h3 className='mb-3 text-lg font-semibold text-gray-800'>
                       {item.reward.title}
                     </h3>
                     <div className='space-y-2'>
-                      <div className='flex items-center gap-2 bg-white/50 backdrop-blur-sm rounded-lg px-3 py-1.5'>
-                        <div className='w-2 h-2 rounded-full bg-purple-400 animate-pulse'></div>
+                      <div className='flex items-center gap-2 rounded-lg bg-white/50 px-3 py-1.5 backdrop-blur-sm'>
+                        <div className='h-2 w-2 animate-pulse rounded-full bg-purple-400'></div>
                         <span className='text-sm font-medium'>Ghi chú:</span>
                         <span className='text-sm text-gray-600'>
                           {item.note}
                         </span>
                       </div>
-                      <div className='flex items-center gap-2 bg-white/50 backdrop-blur-sm rounded-lg px-3 py-1.5'>
-                        <div className='w-2 h-2 rounded-full bg-blue-400 animate-pulse'></div>
+                      <div className='flex items-center gap-2 rounded-lg bg-white/50 px-3 py-1.5 backdrop-blur-sm'>
+                        <div className='h-2 w-2 animate-pulse rounded-full bg-blue-400'></div>
                         <span className='text-sm font-medium'>Thời gian:</span>
                         <span className='text-sm text-gray-600'>
                           {new Date(item.createdAt).toLocaleString()}
@@ -458,7 +458,7 @@ const DashboardLayout = () => {
                 </div>
               ))
             ) : (
-              <div className='text-center py-4'>
+              <div className='py-4 text-center'>
                 <p className='text-gray-500'>
                   Bé chưa đổi được món quà nào hôm nay, bé hãy cố gắng tích điểm
                   nhé...
@@ -468,40 +468,40 @@ const DashboardLayout = () => {
           </div>
         </div>
 
-        <div className='bg-white rounded-xl shadow-sm overflow-hidden'>
-          <div className='p-6 border-b border-gray-200 bg-gradient-to-r from-indigo-100 to-purple-100'>
-            <h2 className='text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-3'>
+        <div className='overflow-hidden rounded-xl bg-white shadow-sm'>
+          <div className='border-b border-gray-200 bg-gradient-to-r from-indigo-100 to-purple-100 p-6'>
+            <h2 className='flex items-center gap-3 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-2xl font-bold text-transparent'>
               <FiGift className='text-indigo-600' />
               Quà trong tầm tay bé
             </h2>
           </div>
           <div className='p-4'>
-            <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
+            <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'>
               {onYourHandGift && onYourHandGift.length > 0 ? (
                 onYourHandGift.map((row: any) => (
                   <div
                     key={row.id}
-                    className={`${getRandomGradient()} p-4 rounded-xl border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-102 relative overflow-hidden group h-full`}
+                    className={`${getRandomGradient()} hover:scale-102 group relative h-full transform overflow-hidden rounded-xl border border-gray-100 p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl`}
                   >
-                    <div className='absolute inset-0 opacity-0 group-hover:opacity-20 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 transition-opacity duration-300'></div>
-                    <div className='relative z-10 flex flex-col h-full'>
-                      <div className='flex items-center justify-between mb-3'>
-                        <span className='text-sm font-medium px-3 py-1 rounded-full bg-white/50 backdrop-blur-sm text-indigo-700 shadow-sm border border-indigo-100'>
+                    <div className='absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-0 transition-opacity duration-300 group-hover:opacity-20'></div>
+                    <div className='relative z-10 flex h-full flex-col'>
+                      <div className='mb-3 flex items-center justify-between'>
+                        <span className='rounded-full border border-indigo-100 bg-white/50 px-3 py-1 text-sm font-medium text-indigo-700 shadow-sm backdrop-blur-sm'>
                           ID: {row.id}
                         </span>
-                        <button className='p-1.5 rounded-full hover:bg-white/50 transition-colors'>
+                        <button className='rounded-full p-1.5 transition-colors hover:bg-white/50'>
                           <FiMoreVertical size={18} className='text-gray-600' />
                         </button>
                       </div>
-                      <h3 className='text-lg font-semibold text-gray-800 flex items-center gap-2 mb-3'>
-                        <FiGift className='text-purple-500 text-xl' />
+                      <h3 className='mb-3 flex items-center gap-2 text-lg font-semibold text-gray-800'>
+                        <FiGift className='text-xl text-purple-500' />
                         {row.title}
                       </h3>
                       <div className='mt-auto space-y-2'>
-                        <div className='flex items-center gap-2 bg-white/50 backdrop-blur-sm rounded-lg px-3 py-1.5'>
-                          <div className='w-2 h-2 rounded-full bg-green-400 animate-pulse'></div>
+                        <div className='flex items-center gap-2 rounded-lg bg-white/50 px-3 py-1.5 backdrop-blur-sm'>
+                          <div className='h-2 w-2 animate-pulse rounded-full bg-green-400'></div>
                           <span className='text-sm font-medium'>Giá:</span>
-                          <span className='text-sm text-purple-600 font-bold'>
+                          <span className='text-sm font-bold text-purple-600'>
                             {row.requiredPoints}
                           </span>
                         </div>
@@ -511,7 +511,7 @@ const DashboardLayout = () => {
                             setSelectedReward(row);
                             setShowModal(true);
                           }}
-                          className='w-full mt-4 bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2'
+                          className='mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-white transition-colors duration-200 hover:bg-indigo-700'
                         >
                           <FiGift size={18} />
                           Đổi phần thưởng
@@ -521,7 +521,7 @@ const DashboardLayout = () => {
                   </div>
                 ))
               ) : (
-                <div className='text-center py-4'>
+                <div className='py-4 text-center'>
                   <p className='text-gray-500'>
                     Chưa có món quà nào bé có thể đổi, cố gắng tích điểm nhiều
                     lên nhé bé...
@@ -533,9 +533,9 @@ const DashboardLayout = () => {
         </div>
 
         {showModal && (
-          <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
-            <div className='bg-white rounded-xl p-6 max-w-md w-full mx-4'>
-              <h3 className='text-xl font-bold mb-4'>Xác nhận đổi quà</h3>
+          <div className='fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50'>
+            <div className='mx-4 w-full max-w-md rounded-xl bg-white p-6'>
+              <h3 className='mb-4 text-xl font-bold'>Xác nhận đổi quà</h3>
               <p className='mb-4'>
                 Bé có chắc chắn muốn đổi {selectedReward?.title} với{' '}
                 {selectedReward?.requiredPoints} điểm?
@@ -543,14 +543,14 @@ const DashboardLayout = () => {
               <div className='flex justify-end gap-4'>
                 <button
                   onClick={() => setShowModal(false)}
-                  className='px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors'
+                  className='rounded-lg bg-gray-100 px-4 py-2 transition-colors hover:bg-gray-200'
                 >
                   Hủy
                 </button>
                 <button
                   onClick={handleRedeem}
                   disabled={isRedeeming}
-                  className='px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors disabled:opacity-50'
+                  className='rounded-lg bg-indigo-600 px-4 py-2 text-white transition-colors hover:bg-indigo-700 disabled:opacity-50'
                 >
                   {isRedeeming ? 'Đang xử lý...' : 'Xác nhận'}
                 </button>

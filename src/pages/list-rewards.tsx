@@ -124,43 +124,43 @@ const Rewards = () => {
   return (
     <Layout>
       <div className='p-6'>
-        <div className='bg-white rounded-xl shadow-sm overflow-hidden mb-6'>
-          <div className='p-6 border-b border-gray-200 bg-gradient-to-r from-indigo-100 to-purple-100'>
-            <h2 className='text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-3'>
+        <div className='mb-6 overflow-hidden rounded-xl bg-white shadow-sm'>
+          <div className='border-b border-gray-200 bg-gradient-to-r from-indigo-100 to-purple-100 p-6'>
+            <h2 className='flex items-center gap-3 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-2xl font-bold text-transparent'>
               <FiGift className='text-indigo-600' />
               Danh sách phần thưởng
             </h2>
           </div>
           <div className='p-4'>
             {loadingRewards ? (
-              <div className='text-center py-4'>
+              <div className='py-4 text-center'>
                 <p className='text-gray-500'>
                   Đang tải danh sách phần thưởng...
                 </p>
               </div>
             ) : loadingRewardsError ? (
-              <div className='text-center py-4'>
+              <div className='py-4 text-center'>
                 <p className='text-red-500'>{loadingRewardsError}</p>
               </div>
-            ) : rewards.length > 0 ? (
-              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-                {rewards.map((item: any) => (
+            ) : rewards?.length > 0 ? (
+              <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'>
+                {rewards?.map((item: any) => (
                   <div
                     key={item.id}
-                    className={`${getRandomGradient()} p-4 rounded-xl border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-102 relative overflow-hidden group h-full`}
+                    className={`${getRandomGradient()} hover:scale-102 group relative h-full transform overflow-hidden rounded-xl border border-gray-100 p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl`}
                   >
-                    <div className='absolute inset-0 opacity-0 group-hover:opacity-20 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 transition-opacity duration-300'></div>
-                    <div className='relative z-10 h-full flex flex-col justify-between'>
+                    <div className='absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-0 transition-opacity duration-300 group-hover:opacity-20'></div>
+                    <div className='relative z-10 flex h-full flex-col justify-between'>
                       <div>
-                        <div className='flex items-center justify-between mb-3'>
-                          <span className='text-sm font-medium px-3 py-1 rounded-full bg-white/50 backdrop-blur-sm text-indigo-700 shadow-sm border border-indigo-100'>
+                        <div className='mb-3 flex items-center justify-between'>
+                          <span className='rounded-full border border-indigo-100 bg-white/50 px-3 py-1 text-sm font-medium text-indigo-700 shadow-sm backdrop-blur-sm'>
                             ID: {item.id}
                           </span>
-                          <span className='text-green-600 font-bold px-3 py-1 rounded-full bg-white/50 backdrop-blur-sm'>
+                          <span className='rounded-full bg-white/50 px-3 py-1 font-bold text-green-600 backdrop-blur-sm'>
                             {item.requiredPoints} điểm
                           </span>
                         </div>
-                        <h3 className='text-lg font-semibold text-gray-800 mb-3'>
+                        <h3 className='mb-3 text-lg font-semibold text-gray-800'>
                           {item.title}
                         </h3>
                       </div>
@@ -169,7 +169,7 @@ const Rewards = () => {
                           setSelectedReward(item);
                           setShowModal(true);
                         }}
-                        className='w-full mt-4 bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2'
+                        className='mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-white transition-colors duration-200 hover:bg-indigo-700'
                       >
                         <FiGift size={18} />
                         Đổi phần thưởng
@@ -179,7 +179,7 @@ const Rewards = () => {
                 ))}
               </div>
             ) : (
-              <div className='text-center py-4'>
+              <div className='py-4 text-center'>
                 <p className='text-gray-500'>Không có phần thưởng nào</p>
               </div>
             )}
@@ -187,23 +187,23 @@ const Rewards = () => {
         </div>
 
         {showModal && (
-          <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
-            <div className='bg-white rounded-xl p-6 max-w-md w-full mx-4'>
-              <h3 className='text-xl font-bold mb-4'>
+          <div className='fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50'>
+            <div className='mx-4 w-full max-w-md rounded-xl bg-white p-6'>
+              <h3 className='mb-4 text-xl font-bold'>
                 Xác nhận đổi phần thưởng
               </h3>
               <p className='mb-4'>Bạn có chắc muốn đổi phần thưởng này?</p>
               <div className='flex justify-end gap-4'>
                 <button
                   onClick={() => setShowModal(false)}
-                  className='px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors'
+                  className='rounded-lg bg-gray-100 px-4 py-2 transition-colors hover:bg-gray-200'
                 >
                   Hủy
                 </button>
                 <button
                   onClick={handleRedeem}
                   disabled={isRedeeming}
-                  className='px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors disabled:opacity-50'
+                  className='rounded-lg bg-indigo-600 px-4 py-2 text-white transition-colors hover:bg-indigo-700 disabled:opacity-50'
                 >
                   {isRedeeming ? 'Đang xử lý...' : 'Xác nhận'}
                 </button>
