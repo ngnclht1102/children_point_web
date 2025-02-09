@@ -111,7 +111,7 @@ const mockStats: any = {
   allTimeUsedPoints: 210,
 };
 
-const fetchActivities = async () => {
+const fetchOnYourHand = async () => {
   try {
     const response = await fetch(ENV_DOMAIN + '/api/v1/rewards/in-your-hand');
     if (!response.ok) return mockOnYourHandGift;
@@ -129,7 +129,7 @@ const fetchPointsHistory = async () => {
     );
     if (!response.ok) return mockPointsHistory;
     const data = await response.json();
-    return data.length > 0 ? data : mockPointsHistory;
+    return data;
   } catch (error) {
     console.error('Lỗi khi tải lịch sử điểm:', error);
   }
@@ -142,7 +142,7 @@ const fetchEarnedPointsHistory = async () => {
     );
     if (!response.ok) return mockEarnedPointsHistory;
     const data = await response.json();
-    return data.length > 0 ? data : mockEarnedPointsHistory;
+    return data;
   } catch (error) {
     console.error('Lỗi khi tải lịch sử điểm kiếm được:', error);
   }
@@ -220,7 +220,7 @@ const DashboardLayout = () => {
     const getActivities = async () => {
       setLoading(true);
       try {
-        const data = await fetchActivities();
+        const data = await fetchOnYourHand();
         setOnYourHandGift(data);
       } catch (err: any) {
         setError(err.message);
@@ -298,7 +298,7 @@ const DashboardLayout = () => {
       // Reload data after successful redeem
       const [pointsData, onYourHandGiftData] = await Promise.all([
         fetchPointsHistory(),
-        fetchActivities(),
+        fetchOnYourHand(),
       ]);
 
       setPointsHistory(pointsData);
@@ -347,7 +347,7 @@ const DashboardLayout = () => {
             {loadingEarned ? (
               <div className='text-center py-4'>
                 <p className='text-gray-500'>
-                  Đang tải lịch sử điểm kiếm được...
+                  Đang tải thử thách được hoàn thành hôm nay...
                 </p>
               </div>
             ) : earnedError ? (
@@ -395,7 +395,8 @@ const DashboardLayout = () => {
             ) : (
               <div className='text-center py-4'>
                 <p className='text-gray-500'>
-                  Không có điểm nào được kiếm hôm nay
+                  Chưa có thử thách nào hoàn thành, bé hãy cố gắng hoàn thành
+                  thử thách và tích điểm nhé
                 </p>
               </div>
             )}
@@ -459,7 +460,8 @@ const DashboardLayout = () => {
             ) : (
               <div className='text-center py-4'>
                 <p className='text-gray-500'>
-                  Không có điểm nào được dùng hôm nay
+                  Bé chưa đổi được món quà nào hôm nay, bé hãy cố gắng tích điểm
+                  nhé...
                 </p>
               </div>
             )}
@@ -470,12 +472,12 @@ const DashboardLayout = () => {
           <div className='p-6 border-b border-gray-200 bg-gradient-to-r from-indigo-100 to-purple-100'>
             <h2 className='text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-3'>
               <FiGift className='text-indigo-600' />
-              Quà trong tầm tay bạn
+              Quà trong tầm tay bé
             </h2>
           </div>
           <div className='p-4'>
             <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
-              {onYourHandGift &&
+              {onYourHandGift && onYourHandGift.length > 0 ? (
                 onYourHandGift.map((row: any) => (
                   <div
                     key={row.id}
@@ -498,15 +500,12 @@ const DashboardLayout = () => {
                       <div className='mt-auto space-y-2'>
                         <div className='flex items-center gap-2 bg-white/50 backdrop-blur-sm rounded-lg px-3 py-1.5'>
                           <div className='w-2 h-2 rounded-full bg-green-400 animate-pulse'></div>
-                          <span className='text-sm font-medium'>Points:</span>
+                          <span className='text-sm font-medium'>Giá:</span>
                           <span className='text-sm text-purple-600 font-bold'>
                             {row.requiredPoints}
                           </span>
                         </div>
-                        <div className='flex items-center gap-2 bg-white/50 backdrop-blur-sm rounded-lg px-3 py-1.5'>
-                          <div className='w-2 h-2 rounded-full bg-blue-400 animate-pulse'></div>
-                          <span className='text-sm font-medium'>Created:</span>
-                        </div>
+
                         <button
                           onClick={() => {
                             setSelectedReward(row);
@@ -520,7 +519,15 @@ const DashboardLayout = () => {
                       </div>
                     </div>
                   </div>
-                ))}
+                ))
+              ) : (
+                <div className='text-center py-4'>
+                  <p className='text-gray-500'>
+                    Chưa có món quà nào bé có thể đổi, cố gắng tích điểm nhiều
+                    lên nhé bé...
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -530,7 +537,7 @@ const DashboardLayout = () => {
             <div className='bg-white rounded-xl p-6 max-w-md w-full mx-4'>
               <h3 className='text-xl font-bold mb-4'>Xác nhận đổi quà</h3>
               <p className='mb-4'>
-                Bạn có chắc chắn muốn đổi {selectedReward?.title} với{' '}
+                Bé có chắc chắn muốn đổi {selectedReward?.title} với{' '}
                 {selectedReward?.requiredPoints} điểm?
               </p>
               <div className='flex justify-end gap-4'>
