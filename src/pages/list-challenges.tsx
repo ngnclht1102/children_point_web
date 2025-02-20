@@ -1,7 +1,9 @@
+import React, { useEffect, useState } from 'react';
+import { FiFlag, FiTrendingUp } from 'react-icons/fi';
+
 import Layout from '@/components/layout/Layout';
+
 import { API_URL } from '@/constant/env';
-import React, { useState, useEffect } from 'react';
-import { FiTrendingUp } from 'react-icons/fi';
 
 const DEBUG_ON_PURECODEAI = false;
 // const ENV_DOMAIN = 'http://localhost:8081';
@@ -33,6 +35,13 @@ const mockChallenges: any = [
     id: 4,
     title: 'Đọc 1 trang sách',
     description: 'Đọc hết 1 trang sách bất kỳ.',
+    earnedPoints: 10,
+    createdAt: '2025-02-08T09:29:49.131104Z',
+  },
+  {
+    id: 5,
+    title: 'Đi chơi với bạn bè',
+    description: 'Đi chơi với bạn bè trong ngày.',
     earnedPoints: 10,
     createdAt: '2025-02-08T09:29:49.131104Z',
   },
@@ -152,9 +161,9 @@ const Challenges = () => {
             <div className='py-4 text-center'>
               <p className='text-red-500'>{loadingChallengesError}</p>
             </div>
-          ) : challenges?.length > 0 ? (
-            <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'>
-              {challenges?.map((item: any) => (
+          ) : challenges.length > 0 ? (
+            <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5'>
+              {challenges.map((item) => (
                 <div
                   key={item.id}
                   className={`${getRandomGradient()} hover:scale-102 group relative h-full transform overflow-hidden rounded-xl border border-gray-100 p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl`}
@@ -173,15 +182,35 @@ const Challenges = () => {
                       <h3 className='mb-3 text-lg font-semibold text-gray-800'>
                         {item.title}
                       </h3>
-                      <p className='mb-4 text-gray-600'>{item.description}</p>
+                    </div>
+                    <div className='space-y-2'>
+                      <div className='flex items-center gap-2 rounded-lg bg-white/50 px-3 py-1.5 backdrop-blur-sm'>
+                        <div className='h-2 w-2 animate-pulse rounded-full bg-purple-400'></div>
+                        <span className='text-sm font-medium'>
+                          Nội dung thử thách:
+                        </span>
+                        <span className='text-sm text-gray-600'>
+                          {item.description}
+                        </span>
+                      </div>
+                      <div className='flex items-center gap-2 rounded-lg bg-white/50 px-3 py-1.5 backdrop-blur-sm'>
+                        <div className='h-2 w-2 animate-pulse rounded-full bg-blue-400'></div>
+                        <span className='text-sm font-medium'>
+                          Hoàn thành sẽ kiếm được:
+                        </span>
+                        <span className='text-sm text-gray-600'>
+                          {item.earnedPoints}
+                        </span>
+                      </div>
                     </div>
                     <button
                       onClick={() => {
                         setSelectedChallenge(item);
                         setShowModal(true);
                       }}
-                      className='w-full rounded-lg bg-indigo-600 px-4 py-2 text-white transition-colors hover:bg-indigo-700'
+                      className='ml-auto mt-4 flex w-full items-center justify-center gap-2 self-start rounded-lg border border-indigo-200 bg-white/50 px-4 py-1.5 text-sm text-indigo-600 shadow-sm backdrop-blur-sm transition-all duration-300 hover:bg-white/70 hover:shadow-md'
                     >
+                      <FiFlag className='h-4 w-4' />
                       Hoàn thành thử thách
                     </button>
                   </div>

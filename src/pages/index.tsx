@@ -484,39 +484,30 @@ const DashboardLayout = () => {
                     className={`${getRandomGradient()} hover:scale-102 group relative h-full transform overflow-hidden rounded-xl border border-gray-100 p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl`}
                   >
                     <div className='absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-0 transition-opacity duration-300 group-hover:opacity-20'></div>
-                    <div className='relative z-10 flex h-full flex-col'>
-                      <div className='mb-3 flex items-center justify-between'>
-                        <span className='rounded-full border border-indigo-100 bg-white/50 px-3 py-1 text-sm font-medium text-indigo-700 shadow-sm backdrop-blur-sm'>
-                          ID: {row.id}
-                        </span>
-                        <button className='rounded-full p-1.5 transition-colors hover:bg-white/50'>
-                          <FiMoreVertical size={18} className='text-gray-600' />
-                        </button>
-                      </div>
-                      <h3 className='mb-3 flex items-center gap-2 text-lg font-semibold text-gray-800'>
-                        <FiGift className='text-xl text-purple-500' />
-                        {row.title}
-                      </h3>
-                      <div className='mt-auto space-y-2'>
-                        <div className='flex items-center gap-2 rounded-lg bg-white/50 px-3 py-1.5 backdrop-blur-sm'>
-                          <div className='h-2 w-2 animate-pulse rounded-full bg-green-400'></div>
-                          <span className='text-sm font-medium'>Giá:</span>
-                          <span className='text-sm font-bold text-purple-600'>
-                            {row.requiredPoints}
+                    <div className='relative z-10 flex h-full flex-col justify-between'>
+                      <div>
+                        <div className='mb-3 flex items-center justify-between'>
+                          <span className='rounded-full border border-indigo-100 bg-white/50 px-3 py-1 text-sm font-medium text-indigo-700 shadow-sm backdrop-blur-sm'>
+                            ID: {row.id}
+                          </span>
+                          <span className='rounded-full bg-white/50 px-3 py-1 font-bold text-green-600 backdrop-blur-sm'>
+                            {row.requiredPoints} điểm
                           </span>
                         </div>
-
-                        <button
-                          onClick={() => {
-                            setSelectedReward(row);
-                            setShowModal(true);
-                          }}
-                          className='mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-white transition-colors duration-200 hover:bg-indigo-700'
-                        >
-                          <FiGift size={18} />
-                          Đổi phần thưởng
-                        </button>
+                        <h3 className='mb-3 text-lg font-semibold text-gray-800'>
+                          {row.title}
+                        </h3>
                       </div>
+                      <button
+                        onClick={() => {
+                          setSelectedReward(row);
+                          setShowModal(true);
+                        }}
+                        className='ml-auto mt-4 flex w-full items-center justify-center gap-2 self-start rounded-lg border border-indigo-200 bg-white/50 px-4 py-1.5 text-sm text-indigo-600 shadow-sm backdrop-blur-sm transition-all duration-300 hover:bg-white/70 hover:shadow-md'
+                      >
+                        <FiGift className='h-4 w-4' />
+                        Đổi phần thưởng
+                      </button>
                     </div>
                   </div>
                 ))
