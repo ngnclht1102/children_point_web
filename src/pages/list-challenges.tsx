@@ -163,7 +163,7 @@ const Challenges = () => {
             </div>
           ) : challenges.length > 0 ? (
             <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5'>
-              {challenges.map((item) => (
+              {challenges.map((item: any) => (
                 <div
                   key={item.id}
                   className={`${getRandomGradient()} hover:scale-102 group relative h-full transform overflow-hidden rounded-xl border border-gray-100 p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl`}
