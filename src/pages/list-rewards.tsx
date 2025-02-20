@@ -144,7 +144,7 @@ const Rewards = () => {
               </div>
             ) : rewards.length > 0 ? (
               <div className='grid auto-rows-fr grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5'>
-                {rewards.map((item) => (
+                {rewards.map((item: any) => (
                   <div
                     key={item.id}
                     className={`${getRandomGradient()} hover:scale-102 group relative h-full transform overflow-hidden rounded-xl border border-gray-100 p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl`}
