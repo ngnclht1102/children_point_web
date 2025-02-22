@@ -50,11 +50,11 @@ const menuItems = [
     route: '/redeem/history', // Route for redeem history
   },
   {
-    disabled: true,
+    disabled: false,
     icon: <FiAlertCircle size={24} />,
     label: 'Danh sách vi phạm',
     id: 'violations',
-    route: '/violations', // Route for violations list
+    route: '/list-violations', // Route for violations list
   },
   {
     disabled: true,

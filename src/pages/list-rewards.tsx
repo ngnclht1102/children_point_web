@@ -107,11 +107,6 @@ const Rewards = () => {
 
     if (success) {
       alert('Đổi phần thưởng thành công!');
-      // Refresh rewards list
-      const updatedRewards = rewards.filter(
-        (r: any) => r.id !== selectedReward.id
-      );
-      setRewards(updatedRewards);
     } else {
       alert('Không thể đổi phần thưởng. Vui lòng thử lại sau!');
     }

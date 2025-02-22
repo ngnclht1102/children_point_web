@@ -1,11 +1,53 @@
 import Layout from '@/components/layout/Layout';
 import { API_URL } from '@/constant/env';
 import React, { useState, useEffect } from 'react';
-import { FiMoreVertical, FiTrendingUp, FiGift } from 'react-icons/fi';
+import { FiMoreVertical, FiAlertTriangle, FiGift } from 'react-icons/fi';
 
 const DEBUG_ON_PURECODEAI = false;
 const ENV_DOMAIN = API_URL;
 // const ENV_DOMAIN = 'http://localhost:8081';
+
+const mockViolationsHistory: any = [
+  {
+    id: 5,
+    points: -30,
+    note: 'Violation applied: Không làm bài tập',
+    type: 'deduct',
+    createdAt: '2025-02-09T14:30:00.748Z',
+    violation: {
+      id: 1,
+      title: 'Không làm bài tập',
+      deductedPoints: 30,
+      createdAt: '2025-02-08T03:10:32.309154Z',
+    },
+  },
+  {
+    id: 6,
+    points: -20,
+    note: 'Violation applied: Đi học trễ',
+    type: 'deduct',
+    createdAt: '2025-02-09T15:00:00.089Z',
+    violation: {
+      id: 2,
+      title: 'Đi học trễ',
+      deductedPoints: 20,
+      createdAt: '2025-02-08T03:10:32.309154Z',
+    },
+  },
+];
+
+const fetchTodayViolations = async () => {
+  try {
+    const response = await fetch(
+      ENV_DOMAIN + '/api/v1/points-history/violations/today'
+    );
+    if (!response.ok) return mockViolationsHistory;
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Lỗi khi tải lịch sử vi phạm:', error);
+  }
+};
 
 // Mock data definitions
 const mockOnYourHandGift: any = [
@@ -125,7 +167,7 @@ const fetchOnYourHand = async () => {
 const fetchPointsHistory = async () => {
   try {
     const response = await fetch(
-      ENV_DOMAIN + '/api/v1/points-history/deduced/today'
+      ENV_DOMAIN + '/api/v1/points-history/rewarded/today'
     );
     if (!response.ok) return mockPointsHistory;
     const data = await response.json();
@@ -210,6 +252,30 @@ const DashboardLayout = () => {
     todayEarnedPoints: 0,
     allTimeUsedPoints: 0,
   });
+
+  const [violationsHistory, setViolationsHistory] = useState([]);
+  const [loadingViolations, setLoadingViolations] = useState(true);
+  const [violationsError, setViolationsError] = useState(null);
+
+  useEffect(() => {
+    if (DEBUG_ON_PURECODEAI) {
+      setViolationsHistory(mockViolationsHistory);
+      return;
+    }
+
+    const getViolationsHistory = async () => {
+      setLoadingViolations(true);
+      try {
+        const data = await fetchTodayViolations();
+        setViolationsHistory(data);
+      } catch (err: any) {
+        setViolationsError(err.message);
+      } finally {
+        setLoadingViolations(false);
+      }
+    };
+    getViolationsHistory();
+  }, []);
 
   useEffect(() => {
     if (DEBUG_ON_PURECODEAI) {
@@ -302,7 +368,6 @@ const DashboardLayout = () => {
       ]);
 
       setPointsHistory(pointsData);
-      setOnYourHandGift(onYourHandGiftData);
       alert('Đổi quà thành công!');
     } else {
       alert('Đổi quà không thành công. Vui lòng thử lại sau!');
@@ -317,8 +382,10 @@ const DashboardLayout = () => {
       <div className='p-6'>
         <div className='mb-6 grid grid-cols-1 gap-6 md:grid-cols-3'>
           {[
-            { label: 'Tổng điểm', value: pointsStatus?.currentPoints || 0 },
-            { label: 'Đã dùng', value: pointsStatus?.allTimeUsedPoints || 0 },
+            {
+              label: 'Tổng điểm hiện có',
+              value: pointsStatus?.currentPoints || 0,
+            },
             {
               label: 'Kiếm được hôm nay',
               value: pointsStatus?.todayEarnedPoints || 0,
@@ -339,7 +406,7 @@ const DashboardLayout = () => {
         <div className='mb-6 overflow-hidden rounded-xl bg-white shadow-sm'>
           <div className='border-b border-gray-200 bg-gradient-to-r from-indigo-100 to-purple-100 p-6'>
             <h2 className='flex items-center gap-3 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-2xl font-bold text-transparent'>
-              <FiTrendingUp className='text-indigo-600' />
+              <FiAlertTriangle className='text-indigo-600' />
               Thử thách được hoàn thành hôm nay
             </h2>
           </div>
@@ -436,7 +503,7 @@ const DashboardLayout = () => {
                       </span>
                     </div>
                     <h3 className='mb-3 text-lg font-semibold text-gray-800'>
-                      {item.reward.title}
+                      {item?.reward?.title}
                     </h3>
                     <div className='space-y-2'>
                       <div className='flex items-center gap-2 rounded-lg bg-white/50 px-3 py-1.5 backdrop-blur-sm'>
@@ -462,6 +529,71 @@ const DashboardLayout = () => {
                 <p className='text-gray-500'>
                   Bé chưa đổi được món quà nào hôm nay, bé hãy cố gắng tích điểm
                   nhé...
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className='mb-6 overflow-hidden rounded-xl bg-white shadow-sm'>
+          <div className='border-b border-gray-200 bg-gradient-to-r from-red-100 to-orange-100 p-6'>
+            <h2 className='flex items-center gap-3 bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-2xl font-bold text-transparent'>
+              <FiAlertTriangle className='text-red-600' />
+              Vi phạm hôm nay
+            </h2>
+          </div>
+          <div className='space-y-4 p-4'>
+            {loadingViolations ? (
+              <div className='py-4 text-center'>
+                <p className='text-gray-500'>Đang tải lịch sử vi phạm...</p>
+              </div>
+            ) : violationsError ? (
+              <div className='py-4 text-center'>
+                <p className='text-red-500'>{violationsError}</p>
+              </div>
+            ) : violationsHistory?.length > 0 ? (
+              violationsHistory?.map((item: any) => (
+                <div
+                  key={item.id}
+                  className={`${getRandomGradient()} hover:scale-102 group relative transform overflow-hidden rounded-xl border border-gray-100 p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl`}
+                >
+                  <div className='absolute inset-0 bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 opacity-0 transition-opacity duration-300 group-hover:opacity-20'></div>
+                  <div className='relative z-10'>
+                    <div className='mb-3 flex items-center justify-between'>
+                      <span className='rounded-full border border-red-100 bg-white/50 px-3 py-1 text-sm font-medium text-red-700 shadow-sm backdrop-blur-sm'>
+                        ID: {item.id}
+                      </span>
+                      <span className='rounded-full bg-white/50 px-3 py-1 font-bold text-red-600 backdrop-blur-sm'>
+                        {item.points} điểm
+                      </span>
+                    </div>
+                    <h3 className='mb-3 text-lg font-semibold text-gray-800'>
+                      {item?.violation?.title}
+                    </h3>
+                    <div className='space-y-2'>
+                      <div className='flex items-center gap-2 rounded-lg bg-white/50 px-3 py-1.5 backdrop-blur-sm'>
+                        <div className='h-2 w-2 animate-pulse rounded-full bg-purple-400'></div>
+                        <span className='text-sm font-medium'>Ghi chú:</span>
+                        <span className='text-sm text-gray-600'>
+                          {item.note}
+                        </span>
+                      </div>
+                      <div className='flex items-center gap-2 rounded-lg bg-white/50 px-3 py-1.5 backdrop-blur-sm'>
+                        <div className='h-2 w-2 animate-pulse rounded-full bg-blue-400'></div>
+                        <span className='text-sm font-medium'>Thời gian:</span>
+                        <span className='text-sm text-gray-600'>
+                          {new Date(item.createdAt).toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className='py-4 text-center'>
+                <p className='text-gray-500'>
+                  Hôm nay bé chưa vi phạm lỗi nào, hãy tiếp tục giữ vững phong
+                  độ nhé!
                 </p>
               </div>
             )}
