@@ -6,12 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="8a3e434b-2c0f-4c2b-98e3-84fbb977bc38" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/sidebar/Sidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/sidebar/Sidebar.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/child_dashboard.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/list-challenges.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/list-challenges.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/list-rewards.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/list-rewards.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/list-violations.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/list-violations.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -89,7 +83,7 @@
       <workItem from="1739274226116" duration="1407000" />
       <workItem from="1739316079883" duration="18621000" />
       <workItem from="1740036481079" duration="31555000" />
-      <workItem from="1742098615351" duration="8640000" />
+      <workItem from="1742098615351" duration="9792000" />
     </task>
     <servers />
   </component>

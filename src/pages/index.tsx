@@ -2,10 +2,8 @@
 import { useState, useCallback, useEffect } from 'react';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { getAuthToken, nonAuthorizedFetch } from '@/lib/api';
-
 const Index = () => {
   const [showSignup, setShowSignup] = useState(false);
-
   const [formData, setFormData] = useState<any>({
     username: '',
     password: '',
@@ -15,47 +13,43 @@ const Index = () => {
   const [errors, setErrors] = useState<any>({});
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
   useEffect(() => {
     const token = getAuthToken();
     if (token) window.location.href = '/child_dashboard';
   }, []);
-
   const validateForm = useCallback(() => {
     const newErrors: any = {};
     if (!formData.username) {
-      newErrors.username = 'Username is required';
+      newErrors.username = 'Tên người dùng là bắt buộc';
     } else if (formData.username.length < 3) {
-      newErrors.username = 'Username must be at least 3 characters';
+      newErrors.username = 'Tên người dùng phải có ít nhất 3 ký tự';
     }
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = 'Mật khẩu là bắt buộc';
     } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+      newErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }, [formData]);
-
   const validateRegisterForm = useCallback(() => {
     const newErrors: any = {};
     if (!formData.username) {
-      newErrors.username = 'Username is required';
+      newErrors.username = 'Tên người dùng là bắt buộc';
     } else if (formData.username.length < 3) {
-      newErrors.username = 'Username must be at least 3 characters';
+      newErrors.username = 'Tên người dùng phải có ít nhất 3 ký tự';
     }
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = 'Mật khẩu là bắt buộc';
     } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+      newErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
     }
     if (!formData.fullName) {
-      newErrors.fullName = 'Full name is required';
+      newErrors.fullName = 'Họ và tên là bắt buộc';
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }, [formData]);
-
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     if (validateForm()) {
@@ -71,45 +65,42 @@ const Index = () => {
             password: formData.password,
           }),
         });
-
         if (!response.ok) {
           const errorData = await response.json();
           throw {
             response: { data: errorData },
-            message: `HTTP error! status: ${response.status}`,
+            message: `Lỗi HTTP! trạng thái: ${response.status}`,
           };
         }
-
         const data = await response.json();
-        console.log('Login successful:', data);
-
-        // Store token in localStorage
+        console.log('Đăng nhập thành công:', data);
+        // Lưu token vào localStorage
         if (data.token) {
-          // Assuming the token is in the response as data.token
+          // Giả sử token nằm trong phản hồi dưới dạng data.token
           localStorage.setItem('authToken', data.token);
-          // Optionally, redirect the user or perform other actions
-          console.log('Token stored in localStorage');
-          // Example redirect:
+          // Tùy chọn, chuyển hướng người dùng hoặc thực hiện các hành động khác
+          console.log('Token đã được lưu trong localStorage');
+          // Ví dụ chuyển hướng:
           window.location.href = '/child_dashboard';
         } else {
-          console.error('Token not found in response.');
+          console.error('Không tìm thấy token trong phản hồi.');
           setErrors({
             ...errors,
-            general: 'Login successful, but token not received.',
+            general: 'Đăng nhập thành công, nhưng không nhận được token.',
           });
         }
       } catch (error: any) {
-        console.error('Login error:', error.response?.data || error.message);
+        console.error('Lỗi đăng nhập:', error.response?.data || error.message);
         setErrors({
           ...errors,
-          general: 'Login failed. Please check your credentials.',
+          general:
+            'Đăng nhập thất bại. Vui lòng kiểm tra thông tin đăng nhập của bạn.',
         });
       } finally {
         setIsLoading(false);
       }
     }
   };
-
   const handleRegisterSubmit = async (e: any) => {
     e.preventDefault();
     if (validateRegisterForm()) {
@@ -129,34 +120,28 @@ const Index = () => {
             }),
           }
         );
-
         if (!response.ok) {
           const errorData = await response.json();
           throw {
             response: { data: errorData },
-            message: `HTTP error! status: ${response.status}`,
+            message: `Lỗi HTTP! trạng thái: ${response.status}`,
           };
         }
-
         const data = await response.json();
-        console.log('Registration successful:', data);
-        setShowSignup(false); // Switch back to login view
-        setFormData({ username: '', password: '', rememberMe: false } as any); // Reset form
+        console.log('Đăng ký thành công:', data);
+        setShowSignup(false); // Chuyển về giao diện đăng nhập
+        setFormData({ username: '', password: '', rememberMe: false } as any); // Đặt lại biểu mẫu
       } catch (error: any) {
-        console.error(
-          'Registration error:',
-          error.response?.data || error.message
-        );
+        console.error('Lỗi đăng ký:', error.response?.data || error.message);
         setErrors({
           ...errors,
-          general: 'Registration failed. Please try again.',
+          general: 'Đăng ký thất bại. Vui lòng thử lại.',
         });
       } finally {
         setIsLoading(false);
       }
     }
   };
-
   const handleChange = (e: any) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev: any) => ({
@@ -164,7 +149,6 @@ const Index = () => {
       [name]: type === 'checkbox' ? checked : value,
     }));
   };
-
   return (
     <div className='perspective-1000 flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4'>
       <div className='relative flex w-full justify-center gap-8'>
@@ -176,15 +160,16 @@ const Index = () => {
             <div className='text-center'>
               <img
                 src='https://images.unsplash.com/photo-1633409361618-c73427e4e206'
-                alt='Company Logo'
+                alt='Logo Công Ty'
                 className='mx-auto mb-4 h-12 w-auto'
               />
               <h2 className='mb-2 text-3xl font-bold text-gray-900'>
-                Welcome back
+                Chào mừng trở lại
               </h2>
-              <p className='text-gray-600'>Please sign in to your account</p>
+              <p className='text-gray-600'>
+                Vui lòng đăng nhập vào tài khoản của bạn
+              </p>
             </div>
-
             <form onSubmit={handleSubmit} className='mt-8 space-y-6'>
               <div className='space-y-4'>
                 <div>
@@ -192,7 +177,7 @@ const Index = () => {
                     htmlFor='username'
                     className='block text-sm font-medium text-gray-700'
                   >
-                    Username
+                    Tên người dùng
                   </label>
                   <div className='relative mt-1'>
                     <input
@@ -204,7 +189,7 @@ const Index = () => {
                       className={`block w-full appearance-none border px-3 py-2 ${
                         errors.username ? 'border-red-500' : 'border-gray-300'
                       } rounded-lg focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                      placeholder='Enter your username'
+                      placeholder='Nhập tên người dùng của bạn'
                       value={formData.username}
                       onChange={handleChange}
                       aria-invalid={errors.username ? 'true' : 'false'}
@@ -216,13 +201,12 @@ const Index = () => {
                     </p>
                   )}
                 </div>
-
                 <div>
                   <label
                     htmlFor='password'
                     className='block text-sm font-medium text-gray-700'
                   >
-                    Password
+                    Mật khẩu
                   </label>
                   <div className='relative mt-1'>
                     <input
@@ -234,7 +218,7 @@ const Index = () => {
                       className={`block w-full appearance-none border py-2 pl-3 pr-10 ${
                         errors.password ? 'border-red-500' : 'border-gray-300'
                       } rounded-lg focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                      placeholder='Enter your password'
+                      placeholder='Nhập mật khẩu của bạn'
                       value={formData.password}
                       onChange={handleChange}
                       aria-invalid={errors.password ? 'true' : 'false'}
@@ -244,7 +228,7 @@ const Index = () => {
                       onClick={() => setShowPassword(!showPassword)}
                       className='absolute inset-y-0 right-0 flex items-center pr-3'
                       aria-label={
-                        showPassword ? 'Hide password' : 'Show password'
+                        showPassword ? 'Ẩn mật khẩu' : 'Hiển thị mật khẩu'
                       }
                     >
                       {showPassword ? (
@@ -260,7 +244,6 @@ const Index = () => {
                     </p>
                   )}
                 </div>
-
                 <div className='flex items-center justify-between'>
                   <div className='flex items-center'>
                     <input
@@ -275,10 +258,9 @@ const Index = () => {
                       htmlFor='remember-me'
                       className='ml-2 block text-sm text-gray-700'
                     >
-                      Remember me
+                      Ghi nhớ tôi
                     </label>
                   </div>
-
                   <div className='text-sm'>
                     <button
                       type='button'
@@ -286,12 +268,11 @@ const Index = () => {
                       onClick={() => setShowSignup(!showSignup)}
                       className='font-medium text-gray-200 '
                     >
-                      Register new account
+                      Đăng ký tài khoản mới
                     </button>
                   </div>
                 </div>
               </div>
-
               <button
                 type='submit'
                 disabled={isLoading}
@@ -319,13 +300,12 @@ const Index = () => {
                     ></path>
                   </svg>
                 ) : (
-                  'Sign in'
+                  'Đăng nhập'
                 )}
               </button>
             </form>
           </div>
         )}
-
         {showSignup && (
           <div
             className='rotate-y-0 animate-slide-in-right w-full max-w-md translate-x-0 transform space-y-8 rounded-xl bg-white p-8 opacity-100 shadow-2xl transition-all duration-700 ease-in-out'
@@ -348,22 +328,20 @@ const Index = () => {
                     clipRule='evenodd'
                   />
                 </svg>
-                Back to Login
+                Quay lại Đăng nhập
               </button>
             </div>
-
             <div className='text-center'>
               <img
                 src='https://images.unsplash.com/photo-1633409361618-c73427e4e206'
-                alt='Company Logo'
+                alt='Logo Công Ty'
                 className='mx-auto mb-4 h-12 w-auto'
               />
               <h2 className='mb-2 text-3xl font-bold text-gray-900'>
-                Create Account
+                Tạo Tài Khoản
               </h2>
-              <p className='text-gray-600'>Register for a new account</p>
+              <p className='text-gray-600'>Đăng ký tài khoản mới</p>
             </div>
-
             <form onSubmit={handleRegisterSubmit} className='mt-8 space-y-6'>
               <div className='space-y-4'>
                 <div>
@@ -371,7 +349,7 @@ const Index = () => {
                     htmlFor='fullName'
                     className='block text-sm font-medium text-gray-700'
                   >
-                    Full Name
+                    Họ và tên
                   </label>
                   <div className='mt-1'>
                     <input
@@ -382,7 +360,7 @@ const Index = () => {
                       className={`block w-full appearance-none border px-3 py-2 ${
                         errors.fullName ? 'border-red-500' : 'border-gray-300'
                       } rounded-lg focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                      placeholder='Enter your full name'
+                      placeholder='Nhập họ và tên của bạn'
                       value={formData.fullName}
                       onChange={handleChange}
                     />
@@ -393,13 +371,12 @@ const Index = () => {
                     </p>
                   )}
                 </div>
-
                 <div>
                   <label
                     htmlFor='register-password'
                     className='block text-sm font-medium text-gray-700'
                   >
-                    Password
+                    Mật khẩu
                   </label>
                   <div className='relative mt-1'>
                     <input
@@ -409,7 +386,7 @@ const Index = () => {
                       autoComplete='new-password'
                       required
                       className='block w-full appearance-none rounded-lg border border-gray-300 py-2 pl-3 pr-10 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500'
-                      placeholder='Create a password'
+                      placeholder='Tạo mật khẩu'
                       value={formData.password}
                       onChange={handleChange}
                     />
@@ -418,7 +395,7 @@ const Index = () => {
                       onClick={() => setShowPassword(!showPassword)}
                       className='absolute inset-y-0 right-0 flex items-center pr-3'
                       aria-label={
-                        showPassword ? 'Hide password' : 'Show password'
+                        showPassword ? 'Ẩn mật khẩu' : 'Hiển thị mật khẩu'
                       }
                     >
                       {showPassword ? (
@@ -429,13 +406,12 @@ const Index = () => {
                     </button>
                   </div>
                 </div>
-
                 <div>
                   <label
                     htmlFor='confirm-password'
                     className='block text-sm font-medium text-gray-700'
                   >
-                    Confirm Password
+                    Xác nhận mật khẩu
                   </label>
                   <div className='relative mt-1'>
                     <input
@@ -445,7 +421,7 @@ const Index = () => {
                       autoComplete='new-password'
                       required
                       className='block w-full appearance-none rounded-lg border border-gray-300 py-2 pl-3 pr-10 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500'
-                      placeholder='Confirm your password'
+                      placeholder='Xác nhận mật khẩu của bạn'
                       value={formData.confirmPassword}
                       onChange={handleChange}
                     />
@@ -454,7 +430,7 @@ const Index = () => {
                       onClick={() => setShowPassword(!showPassword)}
                       className='absolute inset-y-0 right-0 flex items-center pr-3'
                       aria-label={
-                        showPassword ? 'Hide password' : 'Show password'
+                        showPassword ? 'Ẩn mật khẩu' : 'Hiển thị mật khẩu'
                       }
                     >
                       {showPassword ? (
@@ -466,12 +442,11 @@ const Index = () => {
                   </div>
                 </div>
               </div>
-
               <button
                 type='submit'
                 className='flex w-full justify-center rounded-lg border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
               >
-                Create Account
+                Tạo Tài Khoản
               </button>
             </form>
           </div>
@@ -480,5 +455,4 @@ const Index = () => {
     </div>
   );
 };
-
 export default Index;
