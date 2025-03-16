@@ -19,7 +19,7 @@ const menuItems = [
     icon: <FiHome size={24} />,
     label: 'Tình hình hiện tại',
     id: 'dashboard',
-    route: '/', // Route for the dashboard
+    route: '/child_dashboard', // Route for the dashboard
   },
   {
     disabled: false,

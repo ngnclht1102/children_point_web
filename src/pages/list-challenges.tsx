@@ -3,79 +3,7 @@ import { FiFlag, FiTrendingUp } from 'react-icons/fi';
 
 import Layout from '@/components/layout/Layout';
 
-import { API_URL } from '@/constant/env';
-
-const DEBUG_ON_PURECODEAI = false;
-// const ENV_DOMAIN = 'http://localhost:8081';
-const ENV_DOMAIN = API_URL;
-
-const mockChallenges: any = [
-  {
-    id: 1,
-    title: 'Ăn 2 lá rau',
-    description: 'Hoàn thành việc ăn 2 lá rau xanh.',
-    earnedPoints: 15,
-    createdAt: '2025-02-08T09:29:49.131104Z',
-  },
-  {
-    id: 2,
-    title: 'Ăn canh',
-    description: 'Hoàn thành bát canh trong bữa ăn.',
-    earnedPoints: 20,
-    createdAt: '2025-02-08T09:29:49.131104Z',
-  },
-  {
-    id: 3,
-    title: 'Đi ngủ trưa',
-    description: 'Đi ngủ trưa đúng giờ và đủ giấc.',
-    earnedPoints: 25,
-    createdAt: '2025-02-08T09:29:49.131104Z',
-  },
-  {
-    id: 4,
-    title: 'Đọc 1 trang sách',
-    description: 'Đọc hết 1 trang sách bất kỳ.',
-    earnedPoints: 10,
-    createdAt: '2025-02-08T09:29:49.131104Z',
-  },
-  {
-    id: 5,
-    title: 'Đi chơi với bạn bè',
-    description: 'Đi chơi với bạn bè trong ngày.',
-    earnedPoints: 10,
-    createdAt: '2025-02-08T09:29:49.131104Z',
-  },
-];
-
-const fetchChallenges = async () => {
-  try {
-    const response = await fetch(ENV_DOMAIN + '/api/v1/challenges');
-    if (!response.ok) return mockChallenges;
-    const data = await response.json();
-    return data.length > 0 ? data : mockChallenges;
-  } catch (error) {
-    console.error('Lỗi khi tải lịch sử điểm kiếm được:', error);
-  }
-};
-
-const finishChallenge = async (challengeId: number) => {
-  try {
-    const response = await fetch(
-      ENV_DOMAIN + '/api/v1/challenges/finish?challengeId=' + challengeId,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ challengeId }),
-      }
-    );
-    return response.ok;
-  } catch (error) {
-    console.error('Error finishing challenge:', error);
-    return false;
-  }
-};
+import { fetchChallenges, finishChallenge } from '@/lib/api';
 
 const gradientClasses = [
   'bg-gradient-to-r from-rose-100 via-pink-100 to-purple-100',
@@ -90,9 +18,6 @@ const getRandomGradient = () => {
 };
 
 const Challenges = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [activeTab, setActiveTab] = useState('challenge-list');
-
   const [challenges, setChallenges] = useState([]);
   const [loadingChallenges, setLoadingChallenges] = useState(true);
   const [loadingChallengesError, setLoadingChallengesError] = useState(null);
@@ -101,10 +26,6 @@ const Challenges = () => {
   const [isFinishing, setIsFinishing] = useState(false);
 
   useEffect(() => {
-    if (DEBUG_ON_PURECODEAI) {
-      setChallenges(mockChallenges);
-      return;
-    }
     const getChallengesFn = async () => {
       setLoadingChallenges(true);
       try {
@@ -161,7 +82,7 @@ const Challenges = () => {
             <div className='py-4 text-center'>
               <p className='text-red-500'>{loadingChallengesError}</p>
             </div>
-          ) : challenges.length > 0 ? (
+          ) : challenges?.length > 0 ? (
             <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5'>
               {challenges.map((item: any) => (
                 <div
@@ -220,7 +141,7 @@ const Challenges = () => {
           ) : (
             <div className='py-4 text-center'>
               <p className='text-gray-500'>
-                Không có điểm nào được kiếm hôm nay
+                Chưa có thử thách nào được tạo, hãy nói ba mẹ tạo thử thách nhé
               </p>
             </div>
           )}

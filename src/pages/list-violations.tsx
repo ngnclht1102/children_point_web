@@ -2,54 +2,7 @@ import Layout from '@/components/layout/Layout';
 import { API_URL } from '@/constant/env';
 import React, { useState, useCallback, useEffect } from 'react';
 import { FiAlertTriangle } from 'react-icons/fi';
-
-const DEBUG_ON_PURECODEAI = false;
-const ENV_DOMAIN = API_URL;
-
-const mockViolations: any = [
-  {
-    id: 1,
-    title: 'Đi học trễ',
-    deductedPoints: 20,
-    createdAt: '2025-02-08T03:10:32.309154Z',
-  },
-  {
-    id: 2,
-    title: 'Không làm bài tập',
-    deductedPoints: 30,
-    createdAt: '2025-02-08T03:10:32.309154Z',
-  },
-];
-
-const fetchViolations = async () => {
-  try {
-    const response = await fetch(ENV_DOMAIN + '/api/v1/violations');
-    if (!response.ok) return mockViolations;
-    const data = await response.json();
-    return data.length > 0 ? data : mockViolations;
-  } catch (error) {
-    console.error('Lỗi khi tải danh sách vi phạm:', error);
-  }
-};
-
-const reportViolation = async (violationId: any) => {
-  try {
-    const response = await fetch(
-      ENV_DOMAIN + '/api/v1/violations/apply?violation_id=' + violationId,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ violationId }),
-      }
-    );
-    return response.ok;
-  } catch (error) {
-    console.error('Error reporting violation:', error);
-    return false;
-  }
-};
+import { fetchViolations, reportViolation } from '@/lib/api';
 
 const gradientClasses = [
   'bg-gradient-to-r from-red-100 via-orange-100 to-yellow-100',
@@ -75,10 +28,6 @@ const Violations = () => {
   const [isReporting, setIsReporting] = useState(false);
 
   useEffect(() => {
-    if (DEBUG_ON_PURECODEAI) {
-      setViolations(mockViolations);
-      return;
-    }
     const getViolationsFn = async () => {
       setLoadingViolations(true);
       try {

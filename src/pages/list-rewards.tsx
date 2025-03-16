@@ -2,6 +2,7 @@ import Layout from '@/components/layout/Layout';
 import { API_URL } from '@/constant/env';
 import React, { useState, useCallback, useEffect } from 'react';
 import { FiGift } from 'react-icons/fi';
+import { fetchRewards, redeemReward } from '@/lib/api';
 
 const DEBUG_ON_PURECODEAI = false;
 const ENV_DOMAIN = API_URL;
@@ -21,36 +22,6 @@ const mockRewards: any = [
     createdAt: '2025-02-08T03:10:32.309154Z',
   },
 ];
-
-const fetchRewards = async () => {
-  try {
-    const response = await fetch(ENV_DOMAIN + '/api/v1/rewards');
-    if (!response.ok) return mockRewards;
-    const data = await response.json();
-    return data.length > 0 ? data : mockRewards;
-  } catch (error) {
-    console.error('Lỗi khi tải danh sách phần thưởng:', error);
-  }
-};
-
-const redeemReward = async (rewardId: any) => {
-  try {
-    const response = await fetch(
-      ENV_DOMAIN + '/api/v1/rewards/redeem?reward_id=' + rewardId,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ rewardId }),
-      }
-    );
-    return response.ok;
-  } catch (error) {
-    console.error('Error redeeming reward:', error);
-    return false;
-  }
-};
 
 const gradientClasses = [
   'bg-gradient-to-r from-rose-100 via-pink-100 to-purple-100',
