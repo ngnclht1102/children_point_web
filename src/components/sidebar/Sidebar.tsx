@@ -10,6 +10,7 @@ import {
   FiRefreshCw,
   FiAlertCircle,
   FiClock,
+  FiLogOut, // Import logout icon
 } from 'react-icons/fi';
 import useMediaQuery from '@/hooks/media-query';
 
@@ -63,6 +64,12 @@ const menuItems = [
     id: 'violation-history',
     route: '/violations/history', // Route for violation history
   },
+  {
+    disabled: false,
+    icon: <FiLogOut size={24} />,
+    label: 'Đăng xuất',
+    id: 'logout', // Unique ID for logout
+  }, // Add logout button
 ];
 
 export const Sidebar = ({
@@ -102,6 +109,14 @@ export const Sidebar = ({
     [setActiveTab, router]
   );
 
+  // Handle logout functionality
+  const handleLogout = useCallback(() => {
+    // Clear all local storage
+    localStorage.clear();
+    // Redirect to the home page
+    router.push('/');
+  }, [router]);
+
   // Check if it's a mobile device
   const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
 
@@ -134,25 +149,44 @@ export const Sidebar = ({
       </div>
 
       <nav className='mt-8'>
-        {menuItems.map((item) => (
-          <button
-            key={item.id}
-            onClick={() =>
-              !item.disabled && handleNavigation(item.id, item.route)
-            }
-            className={`flex w-full items-center p-4 ${
-              activeTab === item.id
-                ? 'bg-indigo-50 text-indigo-600'
-                : 'text-gray-600'
-            } ${
-              !sidebarOpen && 'justify-center'
-            } transition-colors hover:bg-indigo-50
-            ${item.disabled && 'cursor-not-allowed opacity-50'}`}
-          >
-            {item.icon}
-            {sidebarOpen && <span className='ml-4'>{item.label}</span>}
-          </button>
-        ))}
+        {menuItems.map((item) => {
+          // Render logout button differently since it doesn't have a route
+          if (item.id === 'logout') {
+            return (
+              <button
+                key={item.id}
+                onClick={handleLogout}
+                className={`flex w-full items-center p-4  ${
+                  !sidebarOpen && 'justify-center'
+                } transition-colors hover:bg-red-50`}
+              >
+                {item.icon}
+                {sidebarOpen && <span className='ml-4'>{item.label}</span>}
+              </button>
+            );
+          }
+
+          // Render regular menu items
+          return (
+            <button
+              key={item.id}
+              onClick={() =>
+                !item.disabled && handleNavigation(item.id, item.route)
+              }
+              className={`flex w-full items-center p-4 ${
+                activeTab === item.id
+                  ? 'bg-indigo-50 text-indigo-600'
+                  : 'text-gray-600'
+              } ${
+                !sidebarOpen && 'justify-center'
+              } transition-colors hover:bg-indigo-50
+              ${item.disabled && 'cursor-not-allowed opacity-50'}`}
+            >
+              {item.icon}
+              {sidebarOpen && <span className='ml-4'>{item.label}</span>}
+            </button>
+          );
+        })}
       </nav>
     </aside>
   );
