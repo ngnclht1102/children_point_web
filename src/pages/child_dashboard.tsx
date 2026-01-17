@@ -4,13 +4,15 @@ import Layout from '@/components/layout/Layout';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { FiFlag, FiAlertTriangle, FiGift } from 'react-icons/fi';
 import SectionHeader from '@/components/layout/SectionHeader';
-import GradientCard from '@/components/cards/GradientCard';
-import PointsBadge from '@/components/cards/PointsBadge';
 import LoadingState from '@/components/state/LoadingState';
 import ErrorMessage from '@/components/state/ErrorMessage';
 import EmptyState from '@/components/state/EmptyState';
 import ConfirmationModal from '@/components/modal/ConfirmationModal';
 import StatsCard from '@/components/dashboard/StatsCard';
+import RewardListItem from '@/components/cards/RewardListItem';
+import EarnedPointsHistoryItem from '@/components/cards/EarnedPointsHistoryItem';
+import PointsHistoryItem from '@/components/cards/PointsHistoryItem';
+import ViolationHistoryItem from '@/components/cards/ViolationHistoryItem';
 import { getPointsStatus } from '@/lib/services/points.service';
 import {
   getEarnedPointsHistory,
@@ -215,6 +217,54 @@ const ChildDashboardLayout = () => {
     setSelectedReward(null);
   }, []);
 
+  // Memoize all lists to prevent unnecessary re-renders
+  const earnedPointsList = useMemo(() => {
+    return earnedPointsHistory.map((item) => (
+      <EarnedPointsHistoryItem
+        key={item.id}
+        item={item}
+        gradientClass={
+          earnedPointsGradients.get(item.id) || getGradientByIndex(0)
+        }
+      />
+    ));
+  }, [earnedPointsHistory, earnedPointsGradients]);
+
+  const pointsHistoryList = useMemo(() => {
+    return pointsHistory.map((item) => (
+      <PointsHistoryItem
+        key={item.id}
+        item={item}
+        gradientClass={
+          pointsHistoryGradients.get(item.id) || getGradientByIndex(0)
+        }
+      />
+    ));
+  }, [pointsHistory, pointsHistoryGradients]);
+
+  const violationsHistoryList = useMemo(() => {
+    return violationsHistory.map((item) => (
+      <ViolationHistoryItem
+        key={item.id}
+        item={item}
+        gradientClass={
+          violationsHistoryGradients.get(item.id) || getGradientByIndex(0)
+        }
+      />
+    ));
+  }, [violationsHistory, violationsHistoryGradients]);
+
+  const rewardsList = useMemo(() => {
+    return onYourHandGift.map((row) => (
+      <RewardListItem
+        key={row.id}
+        reward={row}
+        gradientClass={rewardsGradients.get(row.id) || getGradientByIndex(0)}
+        onRedeem={handleOpenModal}
+      />
+    ));
+  }, [onYourHandGift, rewardsGradients, handleOpenModal]);
+
   return (
     <Layout>
       <div className='p-6'>
@@ -243,42 +293,7 @@ const ChildDashboardLayout = () => {
             ) : earnedError ? (
               <ErrorMessage message={earnedError} />
             ) : earnedPointsHistory.length > 0 ? (
-              earnedPointsHistory.map((item) => (
-                <GradientCard
-                  key={item.id}
-                  gradientClass={
-                    earnedPointsGradients.get(item.id) || getGradientByIndex(0)
-                  }
-                >
-                  <div>
-                    <div className='mb-3 flex items-center justify-between'>
-                      <span className='rounded-full border border-indigo-100 bg-white/50 px-3 py-1 text-sm font-medium text-indigo-700 shadow-sm backdrop-blur-sm'>
-                        ID: {item.id}
-                      </span>
-                      <PointsBadge points={item.points} variant='earned' />
-                    </div>
-                    <h3 className='mb-3 text-lg font-semibold text-gray-800'>
-                      {item.challenge.title}
-                    </h3>
-                    <div className='space-y-2'>
-                      <div className='flex items-center gap-2 rounded-lg bg-white/50 px-3 py-1.5 backdrop-blur-sm'>
-                        <div className='h-2 w-2 animate-pulse rounded-full bg-purple-400'></div>
-                        <span className='text-sm font-medium'>Ghi chú:</span>
-                        <span className='text-sm text-gray-600'>
-                          {item.note}
-                        </span>
-                      </div>
-                      <div className='flex items-center gap-2 rounded-lg bg-white/50 px-3 py-1.5 backdrop-blur-sm'>
-                        <div className='h-2 w-2 animate-pulse rounded-full bg-blue-400'></div>
-                        <span className='text-sm font-medium'>Thời gian:</span>
-                        <span className='text-sm text-gray-600'>
-                          {new Date(item.createdAt).toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </GradientCard>
-              ))
+              earnedPointsList
             ) : (
               <EmptyState message='Chưa có thử thách nào hoàn thành, bé hãy cố gắng hoàn thành thử thách và tích điểm nhé' />
             )}
@@ -299,42 +314,7 @@ const ChildDashboardLayout = () => {
             ) : historyError ? (
               <ErrorMessage message={historyError} />
             ) : pointsHistory.length > 0 ? (
-              pointsHistory.map((item) => (
-                <GradientCard
-                  key={item.id}
-                  gradientClass={
-                    pointsHistoryGradients.get(item.id) || getGradientByIndex(0)
-                  }
-                >
-                  <div>
-                    <div className='mb-3 flex items-center justify-between'>
-                      <span className='rounded-full border border-indigo-100 bg-white/50 px-3 py-1 text-sm font-medium text-indigo-700 shadow-sm backdrop-blur-sm'>
-                        ID: {item.id}
-                      </span>
-                      <PointsBadge points={item.points} variant='deducted' />
-                    </div>
-                    <h3 className='mb-3 text-lg font-semibold text-gray-800'>
-                      {item.reward?.title}
-                    </h3>
-                    <div className='space-y-2'>
-                      <div className='flex items-center gap-2 rounded-lg bg-white/50 px-3 py-1.5 backdrop-blur-sm'>
-                        <div className='h-2 w-2 animate-pulse rounded-full bg-purple-400'></div>
-                        <span className='text-sm font-medium'>Ghi chú:</span>
-                        <span className='text-sm text-gray-600'>
-                          {item.note}
-                        </span>
-                      </div>
-                      <div className='flex items-center gap-2 rounded-lg bg-white/50 px-3 py-1.5 backdrop-blur-sm'>
-                        <div className='h-2 w-2 animate-pulse rounded-full bg-blue-400'></div>
-                        <span className='text-sm font-medium'>Thời gian:</span>
-                        <span className='text-sm text-gray-600'>
-                          {new Date(item.createdAt).toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </GradientCard>
-              ))
+              pointsHistoryList
             ) : (
               <EmptyState message='Bé chưa đổi được món quà nào hôm nay, bé hãy cố gắng tích điểm nhé...' />
             )}
@@ -355,43 +335,7 @@ const ChildDashboardLayout = () => {
             ) : violationsError ? (
               <ErrorMessage message={violationsError} />
             ) : violationsHistory.length > 0 ? (
-              violationsHistory.map((item) => (
-                <GradientCard
-                  key={item.id}
-                  gradientClass={
-                    violationsHistoryGradients.get(item.id) ||
-                    getGradientByIndex(0)
-                  }
-                >
-                  <div>
-                    <div className='mb-3 flex items-center justify-between'>
-                      <span className='rounded-full border border-red-100 bg-white/50 px-3 py-1 text-sm font-medium text-red-700 shadow-sm backdrop-blur-sm'>
-                        ID: {item.id}
-                      </span>
-                      <PointsBadge points={item.points} variant='deducted' />
-                    </div>
-                    <h3 className='mb-3 text-lg font-semibold text-gray-800'>
-                      {item.violation.title}
-                    </h3>
-                    <div className='space-y-2'>
-                      <div className='flex items-center gap-2 rounded-lg bg-white/50 px-3 py-1.5 backdrop-blur-sm'>
-                        <div className='h-2 w-2 animate-pulse rounded-full bg-purple-400'></div>
-                        <span className='text-sm font-medium'>Ghi chú:</span>
-                        <span className='text-sm text-gray-600'>
-                          {item.note}
-                        </span>
-                      </div>
-                      <div className='flex items-center gap-2 rounded-lg bg-white/50 px-3 py-1.5 backdrop-blur-sm'>
-                        <div className='h-2 w-2 animate-pulse rounded-full bg-blue-400'></div>
-                        <span className='text-sm font-medium'>Thời gian:</span>
-                        <span className='text-sm text-gray-600'>
-                          {new Date(item.createdAt).toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </GradientCard>
-              ))
+              violationsHistoryList
             ) : (
               <EmptyState message='Hôm nay bé chưa vi phạm lỗi nào, hãy tiếp tục giữ vững phong độ nhé!' />
             )}
@@ -413,39 +357,7 @@ const ChildDashboardLayout = () => {
               ) : error ? (
                 <ErrorMessage message={error} />
               ) : onYourHandGift.length > 0 ? (
-                onYourHandGift.map((row) => (
-                  <GradientCard
-                    key={row.id}
-                    gradientClass={
-                      rewardsGradients.get(row.id) || getGradientByIndex(0)
-                    }
-                    className='h-full'
-                  >
-                    <div className='flex h-full flex-col justify-between'>
-                      <div>
-                        <div className='mb-3 flex items-center justify-between'>
-                          <span className='rounded-full border border-indigo-100 bg-white/50 px-3 py-1 text-sm font-medium text-indigo-700 shadow-sm backdrop-blur-sm'>
-                            ID: {row.id}
-                          </span>
-                          <PointsBadge
-                            points={row.requiredPoints}
-                            variant='required'
-                          />
-                        </div>
-                        <h3 className='mb-3 text-lg font-semibold text-gray-800'>
-                          {row.title}
-                        </h3>
-                      </div>
-                      <button
-                        onClick={() => handleOpenModal(row)}
-                        className='ml-auto mt-4 flex w-full items-center justify-center gap-2 self-start rounded-lg border border-indigo-200 bg-white/50 px-4 py-1.5 text-sm text-indigo-600 shadow-sm backdrop-blur-sm transition-all duration-300 hover:bg-white/70 hover:shadow-md'
-                      >
-                        <FiGift className='h-4 w-4' />
-                        Đổi phần thưởng
-                      </button>
-                    </div>
-                  </GradientCard>
-                ))
+                rewardsList
               ) : (
                 <EmptyState message='Chưa có món quà nào bé có thể đổi, cố gắng tích điểm nhiều lên nhé bé...' />
               )}

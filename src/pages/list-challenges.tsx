@@ -1,13 +1,12 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { FiFlag, FiTrendingUp } from 'react-icons/fi';
+import { FiTrendingUp } from 'react-icons/fi';
 import Layout from '@/components/layout/Layout';
 import SectionHeader from '@/components/layout/SectionHeader';
-import GradientCard from '@/components/cards/GradientCard';
-import PointsBadge from '@/components/cards/PointsBadge';
 import LoadingState from '@/components/state/LoadingState';
 import ErrorMessage from '@/components/state/ErrorMessage';
 import EmptyState from '@/components/state/EmptyState';
 import ConfirmationModal from '@/components/modal/ConfirmationModal';
+import ChallengeListItem from '@/components/cards/ChallengeListItem';
 import {
   getChallenges,
   finishChallenge,
@@ -92,6 +91,18 @@ const Challenges = () => {
     setSelectedChallenge(null);
   }, []);
 
+  // Memoize the challenges list to prevent unnecessary re-renders
+  const challengesList = useMemo(() => {
+    return challenges.map((item) => (
+      <ChallengeListItem
+        key={item.id}
+        challenge={item}
+        gradientClass={challengeGradients.get(item.id) || getGradientByIndex(0)}
+        onFinish={handleOpenModal}
+      />
+    ));
+  }, [challenges, challengeGradients, handleOpenModal]);
+
   return (
     <Layout>
       <div className='mb-6 overflow-hidden rounded-xl bg-white shadow-sm'>
@@ -109,59 +120,7 @@ const Challenges = () => {
             <ErrorMessage message={loadingChallengesError} />
           ) : challenges.length > 0 ? (
             <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5'>
-              {challenges.map((item) => (
-                <GradientCard
-                  key={item.id}
-                  gradientClass={
-                    challengeGradients.get(item.id) || getGradientByIndex(0)
-                  }
-                  className='h-full'
-                >
-                  <div className='flex h-full flex-col justify-between'>
-                    <div>
-                      <div className='mb-3 flex items-center justify-between'>
-                        <span className='rounded-full border border-indigo-100 bg-white/50 px-3 py-1 text-sm font-medium text-indigo-700 shadow-sm backdrop-blur-sm'>
-                          ID: {item.id}
-                        </span>
-                        <PointsBadge
-                          points={item.earnedPoints}
-                          variant='earned'
-                        />
-                      </div>
-                      <h3 className='mb-3 text-lg font-semibold text-gray-800'>
-                        {item.title}
-                      </h3>
-                    </div>
-                    <div className='space-y-2'>
-                      <div className='flex items-center gap-2 rounded-lg bg-white/50 px-3 py-1.5 backdrop-blur-sm'>
-                        <div className='h-2 w-2 animate-pulse rounded-full bg-purple-400'></div>
-                        <span className='text-sm font-medium'>
-                          Nội dung thử thách:
-                        </span>
-                        <span className='text-sm text-gray-600'>
-                          {item.description}
-                        </span>
-                      </div>
-                      <div className='flex items-center gap-2 rounded-lg bg-white/50 px-3 py-1.5 backdrop-blur-sm'>
-                        <div className='h-2 w-2 animate-pulse rounded-full bg-blue-400'></div>
-                        <span className='text-sm font-medium'>
-                          Hoàn thành sẽ kiếm được:
-                        </span>
-                        <span className='text-sm text-gray-600'>
-                          {item.earnedPoints}
-                        </span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => handleOpenModal(item)}
-                      className='ml-auto mt-4 flex w-full items-center justify-center gap-2 self-start rounded-lg border border-indigo-200 bg-white/50 px-4 py-1.5 text-sm text-indigo-600 shadow-sm backdrop-blur-sm transition-all duration-300 hover:bg-white/70 hover:shadow-md'
-                    >
-                      <FiFlag className='h-4 w-4' />
-                      Hoàn thành thử thách
-                    </button>
-                  </div>
-                </GradientCard>
-              ))}
+              {challengesList}
             </div>
           ) : (
             <EmptyState message='Chưa có thử thách nào được tạo, hãy nói ba mẹ tạo thử thách nhé' />
