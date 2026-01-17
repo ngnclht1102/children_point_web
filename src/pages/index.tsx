@@ -1,24 +1,43 @@
-'use-client';
+'use client';
 import { useState, useCallback, useEffect } from 'react';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import { getAuthToken, nonAuthorizedFetch } from '@/lib/api';
+import { getAuthToken } from '@/lib/api/auth';
+import { login, register } from '@/lib/services/auth.service';
+import { LoginRequest, RegisterRequest, FormErrors } from '@/types';
+import FormInput from '@/components/forms/FormInput';
+import PasswordInput from '@/components/forms/PasswordInput';
+import CheckboxInput from '@/components/forms/CheckboxInput';
+
+interface LoginFormData {
+  username: string;
+  password: string;
+  rememberMe: boolean;
+}
+
+interface RegisterFormData extends LoginFormData {
+  fullName: string;
+  confirmPassword?: string;
+}
+
 const Index = () => {
   const [showSignup, setShowSignup] = useState(false);
-  const [formData, setFormData] = useState<any>({
+  const [formData, setFormData] = useState<LoginFormData | RegisterFormData>({
     username: '',
     password: '',
     rememberMe: true,
     fullName: '',
   });
-  const [errors, setErrors] = useState<any>({});
-  const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
+
   useEffect(() => {
     const token = getAuthToken();
-    if (token) window.location.href = '/child_dashboard';
+    if (token) {
+      window.location.href = '/child_dashboard';
+    }
   }, []);
+
   const validateForm = useCallback(() => {
-    const newErrors: any = {};
+    const newErrors: FormErrors = {};
     if (!formData.username) {
       newErrors.username = 'Tên người dùng là bắt buộc';
     } else if (formData.username.length < 3) {
@@ -32,8 +51,9 @@ const Index = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }, [formData]);
+
   const validateRegisterForm = useCallback(() => {
-    const newErrors: any = {};
+    const newErrors: FormErrors = {};
     if (!formData.username) {
       newErrors.username = 'Tên người dùng là bắt buộc';
     } else if (formData.username.length < 3) {
@@ -44,111 +64,88 @@ const Index = () => {
     } else if (formData.password.length < 6) {
       newErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
     }
-    if (!formData.fullName) {
+    if (!('fullName' in formData) || !formData.fullName) {
       newErrors.fullName = 'Họ và tên là bắt buộc';
     }
+    if (
+      'confirmPassword' in formData &&
+      formData.password !== formData.confirmPassword
+    ) {
+      newErrors.confirmPassword = 'Mật khẩu xác nhận không khớp';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }, [formData]);
-  const handleSubmit = async (e: any) => {
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
       setIsLoading(true);
-      try {
-        const response = await nonAuthorizedFetch('/api/public/v1/auth/login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            username: formData.username,
-            password: formData.password,
-          }),
-        });
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw {
-            response: { data: errorData },
-            message: `Lỗi HTTP! trạng thái: ${response.status}`,
-          };
-        }
-        const data = await response.json();
-        console.log('Đăng nhập thành công:', data);
-        // Lưu token vào localStorage
-        if (data.token) {
-          // Giả sử token nằm trong phản hồi dưới dạng data.token
-          localStorage.setItem('authToken', data.token);
-          // Tùy chọn, chuyển hướng người dùng hoặc thực hiện các hành động khác
-          console.log('Token đã được lưu trong localStorage');
-          // Ví dụ chuyển hướng:
-          window.location.href = '/child_dashboard';
-        } else {
-          console.error('Không tìm thấy token trong phản hồi.');
-          setErrors({
-            ...errors,
-            general: 'Đăng nhập thành công, nhưng không nhận được token.',
-          });
-        }
-      } catch (error: any) {
-        console.error('Lỗi đăng nhập:', error.response?.data || error.message);
+      setErrors({});
+
+      const loginRequest: LoginRequest = {
+        username: formData.username,
+        password: formData.password,
+      };
+
+      const response = await login(loginRequest);
+
+      if (response.success && response.data) {
+        window.location.href = '/child_dashboard';
+      } else {
         setErrors({
-          ...errors,
           general:
+            response.error?.message ||
             'Đăng nhập thất bại. Vui lòng kiểm tra thông tin đăng nhập của bạn.',
         });
-      } finally {
-        setIsLoading(false);
       }
+
+      setIsLoading(false);
     }
   };
-  const handleRegisterSubmit = async (e: any) => {
+
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validateRegisterForm()) {
       setIsLoading(true);
-      try {
-        const response = await nonAuthorizedFetch(
-          '/api/public/v1/auth/register',
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              username: formData.username,
-              password: formData.password,
-              fullName: formData.fullName,
-            }),
-          }
-        );
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw {
-            response: { data: errorData },
-            message: `Lỗi HTTP! trạng thái: ${response.status}`,
-          };
-        }
-        const data = await response.json();
-        console.log('Đăng ký thành công:', data);
-        setShowSignup(false); // Chuyển về giao diện đăng nhập
-        setFormData({ username: '', password: '', rememberMe: false } as any); // Đặt lại biểu mẫu
-      } catch (error: any) {
-        console.error('Lỗi đăng ký:', error.response?.data || error.message);
-        setErrors({
-          ...errors,
-          general: 'Đăng ký thất bại. Vui lòng thử lại.',
+      setErrors({});
+
+      const registerRequest: RegisterRequest = {
+        username: formData.username,
+        password: formData.password,
+        fullName: 'fullName' in formData ? formData.fullName : '',
+      };
+
+      const response = await register(registerRequest);
+
+      if (response.success) {
+        setShowSignup(false);
+        setFormData({
+          username: '',
+          password: '',
+          rememberMe: false,
+          fullName: '',
         });
-      } finally {
-        setIsLoading(false);
+        setErrors({});
+      } else {
+        setErrors({
+          general:
+            response.error?.message || 'Đăng ký thất bại. Vui lòng thử lại.',
+        });
       }
+
+      setIsLoading(false);
     }
   };
-  const handleChange = (e: any) => {
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
-    setFormData((prev: any) => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
     }));
   };
+
   return (
     <div className='perspective-1000 flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4'>
       <div className='relative flex w-full justify-center gap-8'>
@@ -172,106 +169,48 @@ const Index = () => {
             </div>
             <form onSubmit={handleSubmit} className='mt-8 space-y-6'>
               <div className='space-y-4'>
-                <div>
-                  <label
-                    htmlFor='username'
-                    className='block text-sm font-medium text-gray-700'
-                  >
-                    Tên người dùng
-                  </label>
-                  <div className='relative mt-1'>
-                    <input
-                      id='username'
-                      name='username'
-                      type='text'
-                      autoComplete='username'
-                      required
-                      className={`block w-full appearance-none border px-3 py-2 ${
-                        errors.username ? 'border-red-500' : 'border-gray-300'
-                      } rounded-lg focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                      placeholder='Nhập tên người dùng của bạn'
-                      value={formData.username}
-                      onChange={handleChange}
-                      aria-invalid={errors.username ? 'true' : 'false'}
-                    />
-                  </div>
-                  {errors.username && (
-                    <p className='mt-1 text-sm text-red-600' role='alert'>
-                      {errors.username}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label
-                    htmlFor='password'
-                    className='block text-sm font-medium text-gray-700'
-                  >
-                    Mật khẩu
-                  </label>
-                  <div className='relative mt-1'>
-                    <input
-                      id='password'
-                      name='password'
-                      type={showPassword ? 'text' : 'password'}
-                      autoComplete='current-password'
-                      required
-                      className={`block w-full appearance-none border py-2 pl-3 pr-10 ${
-                        errors.password ? 'border-red-500' : 'border-gray-300'
-                      } rounded-lg focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                      placeholder='Nhập mật khẩu của bạn'
-                      value={formData.password}
-                      onChange={handleChange}
-                      aria-invalid={errors.password ? 'true' : 'false'}
-                    />
-                    <button
-                      type='button'
-                      onClick={() => setShowPassword(!showPassword)}
-                      className='absolute inset-y-0 right-0 flex items-center pr-3'
-                      aria-label={
-                        showPassword ? 'Ẩn mật khẩu' : 'Hiển thị mật khẩu'
-                      }
-                    >
-                      {showPassword ? (
-                        <FaEyeSlash className='text-gray-400 hover:text-gray-600' />
-                      ) : (
-                        <FaEye className='text-gray-400 hover:text-gray-600' />
-                      )}
-                    </button>
-                  </div>
-                  {errors.password && (
-                    <p className='mt-1 text-sm text-red-600' role='alert'>
-                      {errors.password}
-                    </p>
-                  )}
-                </div>
+                <FormInput
+                  label='Tên người dùng'
+                  name='username'
+                  type='text'
+                  value={formData.username}
+                  onChange={handleChange}
+                  error={errors.username}
+                  placeholder='Nhập tên người dùng của bạn'
+                  required
+                />
+                <PasswordInput
+                  label='Mật khẩu'
+                  name='password'
+                  value={formData.password}
+                  onChange={handleChange}
+                  error={errors.password}
+                  placeholder='Nhập mật khẩu của bạn'
+                  required
+                />
                 <div className='flex items-center justify-between'>
-                  <div className='flex items-center'>
-                    <input
-                      id='remember-me'
-                      name='rememberMe'
-                      type='checkbox'
-                      className='h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500'
-                      checked={formData.rememberMe}
-                      onChange={handleChange}
-                    />
-                    <label
-                      htmlFor='remember-me'
-                      className='ml-2 block text-sm text-gray-700'
-                    >
-                      Ghi nhớ tôi
-                    </label>
-                  </div>
+                  <CheckboxInput
+                    label='Ghi nhớ tôi'
+                    name='rememberMe'
+                    checked={formData.rememberMe}
+                    onChange={handleChange}
+                  />
                   <div className='text-sm'>
                     <button
                       type='button'
                       disabled
                       onClick={() => setShowSignup(!showSignup)}
-                      className='font-medium text-gray-200 '
+                      className='font-medium text-gray-200'
                     >
                       Đăng ký tài khoản mới
                     </button>
                   </div>
                 </div>
+                {errors.general && (
+                  <p className='text-sm text-red-600' role='alert'>
+                    {errors.general}
+                  </p>
+                )}
               </div>
               <button
                 type='submit'
@@ -344,109 +283,60 @@ const Index = () => {
             </div>
             <form onSubmit={handleRegisterSubmit} className='mt-8 space-y-6'>
               <div className='space-y-4'>
-                <div>
-                  <label
-                    htmlFor='fullName'
-                    className='block text-sm font-medium text-gray-700'
-                  >
-                    Họ và tên
-                  </label>
-                  <div className='mt-1'>
-                    <input
-                      id='fullName'
-                      name='fullName'
-                      type='text'
-                      required
-                      className={`block w-full appearance-none border px-3 py-2 ${
-                        errors.fullName ? 'border-red-500' : 'border-gray-300'
-                      } rounded-lg focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                      placeholder='Nhập họ và tên của bạn'
-                      value={formData.fullName}
-                      onChange={handleChange}
-                    />
-                  </div>
-                  {errors.fullName && (
-                    <p className='mt-1 text-sm text-red-600' role='alert'>
-                      {errors.fullName}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label
-                    htmlFor='register-password'
-                    className='block text-sm font-medium text-gray-700'
-                  >
-                    Mật khẩu
-                  </label>
-                  <div className='relative mt-1'>
-                    <input
-                      id='register-password'
-                      name='password'
-                      type={showPassword ? 'text' : 'password'}
-                      autoComplete='new-password'
-                      required
-                      className='block w-full appearance-none rounded-lg border border-gray-300 py-2 pl-3 pr-10 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500'
-                      placeholder='Tạo mật khẩu'
-                      value={formData.password}
-                      onChange={handleChange}
-                    />
-                    <button
-                      type='button'
-                      onClick={() => setShowPassword(!showPassword)}
-                      className='absolute inset-y-0 right-0 flex items-center pr-3'
-                      aria-label={
-                        showPassword ? 'Ẩn mật khẩu' : 'Hiển thị mật khẩu'
-                      }
-                    >
-                      {showPassword ? (
-                        <FaEyeSlash className='text-gray-400 hover:text-gray-600' />
-                      ) : (
-                        <FaEye className='text-gray-400 hover:text-gray-600' />
-                      )}
-                    </button>
-                  </div>
-                </div>
-                <div>
-                  <label
-                    htmlFor='confirm-password'
-                    className='block text-sm font-medium text-gray-700'
-                  >
-                    Xác nhận mật khẩu
-                  </label>
-                  <div className='relative mt-1'>
-                    <input
-                      id='confirm-password'
-                      name='confirmPassword'
-                      type={showPassword ? 'text' : 'password'}
-                      autoComplete='new-password'
-                      required
-                      className='block w-full appearance-none rounded-lg border border-gray-300 py-2 pl-3 pr-10 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500'
-                      placeholder='Xác nhận mật khẩu của bạn'
-                      value={formData.confirmPassword}
-                      onChange={handleChange}
-                    />
-                    <button
-                      type='button'
-                      onClick={() => setShowPassword(!showPassword)}
-                      className='absolute inset-y-0 right-0 flex items-center pr-3'
-                      aria-label={
-                        showPassword ? 'Ẩn mật khẩu' : 'Hiển thị mật khẩu'
-                      }
-                    >
-                      {showPassword ? (
-                        <FaEyeSlash className='text-gray-400 hover:text-gray-600' />
-                      ) : (
-                        <FaEye className='text-gray-400 hover:text-gray-600' />
-                      )}
-                    </button>
-                  </div>
-                </div>
+                <FormInput
+                  label='Họ và tên'
+                  name='fullName'
+                  type='text'
+                  value={'fullName' in formData ? formData.fullName : ''}
+                  onChange={handleChange}
+                  error={errors.fullName}
+                  placeholder='Nhập họ và tên của bạn'
+                  required
+                />
+                <FormInput
+                  label='Tên người dùng'
+                  name='username'
+                  type='text'
+                  value={formData.username}
+                  onChange={handleChange}
+                  error={errors.username}
+                  placeholder='Nhập tên người dùng của bạn'
+                  required
+                />
+                <PasswordInput
+                  label='Mật khẩu'
+                  name='password'
+                  value={formData.password}
+                  onChange={handleChange}
+                  error={errors.password}
+                  placeholder='Tạo mật khẩu'
+                  required
+                />
+                <PasswordInput
+                  label='Xác nhận mật khẩu'
+                  name='confirmPassword'
+                  value={
+                    'confirmPassword' in formData
+                      ? formData.confirmPassword || ''
+                      : ''
+                  }
+                  onChange={handleChange}
+                  error={errors.confirmPassword}
+                  placeholder='Xác nhận mật khẩu của bạn'
+                  required
+                />
+                {errors.general && (
+                  <p className='text-sm text-red-600' role='alert'>
+                    {errors.general}
+                  </p>
+                )}
               </div>
               <button
                 type='submit'
-                className='flex w-full justify-center rounded-lg border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
+                disabled={isLoading}
+                className='flex w-full justify-center rounded-lg border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50'
               >
-                Tạo Tài Khoản
+                {isLoading ? 'Đang xử lý...' : 'Tạo Tài Khoản'}
               </button>
             </form>
           </div>
@@ -455,4 +345,5 @@ const Index = () => {
     </div>
   );
 };
+
 export default Index;

@@ -1,41 +1,47 @@
 import React, { useEffect, useState } from 'react';
 import { FiFlag, FiTrendingUp } from 'react-icons/fi';
-
 import Layout from '@/components/layout/Layout';
-
-import { fetchChallenges, finishChallenge } from '@/lib/api';
-
-const gradientClasses = [
-  'bg-gradient-to-r from-rose-100 via-pink-100 to-purple-100',
-  'bg-gradient-to-r from-blue-100 via-cyan-100 to-teal-100',
-  'bg-gradient-to-r from-amber-100 via-orange-100 to-yellow-100',
-  'bg-gradient-to-r from-emerald-100 via-green-100 to-lime-100',
-  'bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100',
-];
-
-const getRandomGradient = () => {
-  return gradientClasses[Math.floor(Math.random() * gradientClasses.length)];
-};
+import SectionHeader from '@/components/layout/SectionHeader';
+import GradientCard from '@/components/cards/GradientCard';
+import PointsBadge from '@/components/cards/PointsBadge';
+import LoadingState from '@/components/state/LoadingState';
+import ErrorMessage from '@/components/state/ErrorMessage';
+import EmptyState from '@/components/state/EmptyState';
+import ConfirmationModal from '@/components/modal/ConfirmationModal';
+import {
+  getChallenges,
+  finishChallenge,
+} from '@/lib/services/challenges.service';
+import { getRandomGradient } from '@/lib/gradients';
+import { Challenge } from '@/types';
 
 const Challenges = () => {
-  const [challenges, setChallenges] = useState([]);
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [loadingChallenges, setLoadingChallenges] = useState(true);
-  const [loadingChallengesError, setLoadingChallengesError] = useState(null);
-  const [selectedChallenge, setSelectedChallenge] = useState<any>(null);
+  const [loadingChallengesError, setLoadingChallengesError] = useState<
+    string | null
+  >(null);
+  const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(
+    null
+  );
   const [showModal, setShowModal] = useState(false);
   const [isFinishing, setIsFinishing] = useState(false);
 
   useEffect(() => {
     const getChallengesFn = async () => {
       setLoadingChallenges(true);
-      try {
-        const data = await fetchChallenges();
-        setChallenges(data);
-      } catch (err: any) {
-        setLoadingChallengesError(err.message);
-      } finally {
-        setLoadingChallenges(false);
+      setLoadingChallengesError(null);
+      const response = await getChallenges();
+
+      if (response.success && response.data) {
+        setChallenges(response.data);
+      } else {
+        setLoadingChallengesError(
+          response.error?.message || 'Không thể tải danh sách thử thách'
+        );
       }
+
+      setLoadingChallenges(false);
     };
     getChallengesFn();
   }, []);
@@ -44,17 +50,22 @@ const Challenges = () => {
     if (!selectedChallenge) return;
 
     setIsFinishing(true);
-    const success = await finishChallenge(selectedChallenge.id);
+    const response = await finishChallenge({
+      challengeId: selectedChallenge.id,
+    });
 
-    if (success) {
+    if (response.success && response.data) {
       alert('Thử thách hoàn thành thành công!');
       // Refresh challenges list
       const updatedChallenges = challenges.filter(
-        (c: any) => c.id !== selectedChallenge.id
+        (c) => c.id !== selectedChallenge.id
       );
       setChallenges(updatedChallenges);
     } else {
-      alert('Không thể hoàn thành thử thách. Vui lòng thử lại sau!');
+      alert(
+        response.error?.message ||
+          'Không thể hoàn thành thử thách. Vui lòng thử lại sau!'
+      );
     }
 
     setIsFinishing(false);
@@ -65,40 +76,36 @@ const Challenges = () => {
   return (
     <Layout>
       <div className='mb-6 overflow-hidden rounded-xl bg-white shadow-sm'>
-        <div className='border-b border-gray-200 bg-gradient-to-r from-indigo-100 to-purple-100 p-6'>
-          <h2 className='flex items-center gap-3 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-2xl font-bold text-transparent'>
-            <FiTrendingUp className='text-indigo-600' />
-            Danh sách thử thách
-          </h2>
-        </div>
+        <SectionHeader
+          title='Danh sách thử thách'
+          icon={FiTrendingUp}
+          gradientFrom='from-indigo-600'
+          gradientTo='to-purple-600'
+          iconColor='text-indigo-600'
+        />
         <div className='p-4'>
           {loadingChallenges ? (
-            <div className='py-4 text-center'>
-              <p className='text-gray-500'>
-                Đang tải lịch sử điểm kiếm được...
-              </p>
-            </div>
+            <LoadingState message='Đang tải lịch sử điểm kiếm được...' />
           ) : loadingChallengesError ? (
-            <div className='py-4 text-center'>
-              <p className='text-red-500'>{loadingChallengesError}</p>
-            </div>
-          ) : challenges?.length > 0 ? (
+            <ErrorMessage message={loadingChallengesError} />
+          ) : challenges.length > 0 ? (
             <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5'>
-              {challenges.map((item: any) => (
-                <div
+              {challenges.map((item) => (
+                <GradientCard
                   key={item.id}
-                  className={`${getRandomGradient()} hover:scale-102 group relative h-full transform overflow-hidden rounded-xl border border-gray-100 p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl`}
+                  gradientClass={getRandomGradient()}
+                  className='h-full'
                 >
-                  <div className='absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-0 transition-opacity duration-300 group-hover:opacity-20'></div>
-                  <div className='relative z-10 flex h-full flex-col justify-between'>
+                  <div className='flex h-full flex-col justify-between'>
                     <div>
                       <div className='mb-3 flex items-center justify-between'>
                         <span className='rounded-full border border-indigo-100 bg-white/50 px-3 py-1 text-sm font-medium text-indigo-700 shadow-sm backdrop-blur-sm'>
                           ID: {item.id}
                         </span>
-                        <span className='rounded-full bg-white/50 px-3 py-1 font-bold text-green-600 backdrop-blur-sm'>
-                          +{item.earnedPoints} điểm
-                        </span>
+                        <PointsBadge
+                          points={item.earnedPoints}
+                          variant='earned'
+                        />
                       </div>
                       <h3 className='mb-3 text-lg font-semibold text-gray-800'>
                         {item.title}
@@ -135,46 +142,28 @@ const Challenges = () => {
                       Hoàn thành thử thách
                     </button>
                   </div>
-                </div>
+                </GradientCard>
               ))}
             </div>
           ) : (
-            <div className='py-4 text-center'>
-              <p className='text-gray-500'>
-                Chưa có thử thách nào được tạo, hãy nói ba mẹ tạo thử thách nhé
-              </p>
-            </div>
+            <EmptyState message='Chưa có thử thách nào được tạo, hãy nói ba mẹ tạo thử thách nhé' />
           )}
         </div>
       </div>
 
-      {showModal && (
-        <div className='fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50'>
-          <div className='mx-4 w-full max-w-md rounded-xl bg-white p-6'>
-            <h3 className='mb-4 text-xl font-bold'>
-              Xác nhận hoàn thành thử thách
-            </h3>
-            <p className='mb-4'>
-              Bạn có chắc là mình đã hoàn thành thử thách này?
-            </p>
-            <div className='flex justify-end gap-4'>
-              <button
-                onClick={() => setShowModal(false)}
-                className='rounded-lg bg-gray-100 px-4 py-2 transition-colors hover:bg-gray-200'
-              >
-                Hủy
-              </button>
-              <button
-                onClick={handleFinish}
-                disabled={isFinishing}
-                className='rounded-lg bg-indigo-600 px-4 py-2 text-white transition-colors hover:bg-indigo-700 disabled:opacity-50'
-              >
-                {isFinishing ? 'Đang xử lý...' : 'Xác nhận'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmationModal
+        isOpen={showModal}
+        title='Xác nhận hoàn thành thử thách'
+        message='Bạn có chắc là mình đã hoàn thành thử thách này?'
+        confirmText='Xác nhận'
+        cancelText='Hủy'
+        onConfirm={handleFinish}
+        onCancel={() => {
+          setShowModal(false);
+          setSelectedChallenge(null);
+        }}
+        isLoading={isFinishing}
+      />
     </Layout>
   );
 };
