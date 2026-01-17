@@ -11,6 +11,7 @@ export interface Challenge extends BaseEntity {
   title: string;
   description: string;
   earnedPoints: number;
+  shareAcrossGroup?: boolean;
 }
 
 /**
@@ -20,6 +21,8 @@ export interface ChallengeRequest {
   title: string;
   description: string;
   earnedPoints: number;
+  userId?: number; // Required if shareAcrossGroup is false, must be null if shareAcrossGroup is true
+  shareAcrossGroup?: boolean; // If true, applies to all children (userId must be null)
 }
 
 /**

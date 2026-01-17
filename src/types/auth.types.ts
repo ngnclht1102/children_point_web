@@ -42,4 +42,5 @@ export interface User {
   email?: string;
   createdAt: string;
   updatedAt?: string;
+  roles?: string[]; // User roles (e.g., ['PARENT', 'CHILD'])
 }

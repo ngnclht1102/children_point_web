@@ -11,6 +11,7 @@ export interface Violation extends BaseEntity {
   title: string;
   description?: string;
   deductedPoints: number;
+  shareAcrossGroup?: boolean;
 }
 
 /**
@@ -20,6 +21,8 @@ export interface ViolationRequest {
   title: string;
   description?: string;
   deductedPoints: number;
+  userId?: number; // Required if shareAcrossGroup is false, must be null if shareAcrossGroup is true
+  shareAcrossGroup?: boolean; // If true, applies to all children (userId must be null)
 }
 
 /**

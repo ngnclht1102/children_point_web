@@ -91,6 +91,9 @@ const Index = () => {
       const response = await login(loginRequest);
 
       if (response.success && response.data) {
+        // Fetch user info after login to get roles
+        const { getCurrentUser } = await import('@/lib/services/auth.service');
+        await getCurrentUser();
         window.location.href = '/child_dashboard';
       } else {
         setErrors({

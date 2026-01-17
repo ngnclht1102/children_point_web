@@ -11,6 +11,7 @@ export interface Reward extends BaseEntity {
   title: string;
   requiredPoints: number;
   description?: string;
+  shareAcrossGroup?: boolean;
 }
 
 /**
@@ -20,6 +21,8 @@ export interface RewardRequest {
   title: string;
   requiredPoints: number;
   description?: string;
+  userId?: number; // Required if shareAcrossGroup is false, must be null if shareAcrossGroup is true
+  shareAcrossGroup?: boolean; // If true, applies to all children (userId must be null)
 }
 
 /**

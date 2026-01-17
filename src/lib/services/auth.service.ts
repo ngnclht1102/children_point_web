@@ -7,8 +7,9 @@ import {
   RegisterRequest,
   AuthResponse,
   ServiceResponse,
+  User,
 } from '@/types';
-import { postUnauthorized } from '../api/http';
+import { postUnauthorized, get } from '../api/http';
 import { setAuthToken, removeAuthToken } from '../api/auth';
 import { isAuthResponse } from '../type-guards';
 
@@ -99,8 +100,73 @@ export async function register(
 }
 
 /**
+ * Get current user info
+ */
+export async function getCurrentUser(): Promise<ServiceResponse<User>> {
+  try {
+    const response = await get<User>('/api/v1/auth/me');
+
+    if (response.success && response.data) {
+      // Store user info in localStorage
+      if (response.data) {
+        localStorage.setItem('user', JSON.stringify(response.data));
+      }
+      return {
+        success: true,
+        data: response.data,
+        error: null,
+      };
+    }
+
+    return {
+      success: false,
+      data: null,
+      error: response.error || {
+        message: 'Failed to fetch user info',
+      },
+    };
+  } catch (error) {
+    return {
+      success: false,
+      data: null,
+      error: {
+        message:
+          error instanceof Error ? error.message : 'Failed to fetch user info',
+        originalError: error,
+      },
+    };
+  }
+}
+
+/**
+ * Get stored user from localStorage
+ */
+export function getStoredUser(): User | null {
+  try {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      return JSON.parse(userStr);
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Check if user has a specific role
+ */
+export function hasRole(user: User | null, role: string): boolean {
+  if (!user || !user.roles) {
+    return false;
+  }
+  return user.roles.includes(role);
+}
+
+/**
  * Logout service
  */
 export function logout(): void {
   removeAuthToken();
+  localStorage.removeItem('user');
 }

@@ -33,17 +33,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 />
               </div>
             </div>
-            {/*<div className='flex items-center gap-4'>*/}
-            {/*  <button className='p-2 rounded-lg hover:bg-gray-100 relative'>*/}
-            {/*    <FiBell size={24} />*/}
-            {/*    <span className='absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full'></span>*/}
-            {/*  </button>*/}
-            {/*  <img*/}
-            {/*    src='https://images.unsplash.com/photo-1472099645785-5658abf4ff4e'*/}
-            {/*    alt='Profile'*/}
-            {/*    className='w-10 h-10 rounded-full'*/}
-            {/*  />*/}
-            {/*</div>*/}
+            <div className='flex items-center gap-4'>
+              {/*<button className='p-2 rounded-lg hover:bg-gray-100 relative'>*/}
+              {/*  <FiBell size={24} />*/}
+              {/*  <span className='absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full'></span>*/}
+              {/*</button>*/}
+              {/*<img*/}
+              {/*  src='https://images.unsplash.com/photo-1472099645785-5658abf4ff4e'*/}
+              {/*  alt='Profile'*/}
+              {/*  className='w-10 h-10 rounded-full'*/}
+              {/*/>*/}
+            </div>
           </div>
         </header>
 

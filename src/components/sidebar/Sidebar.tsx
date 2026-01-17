@@ -10,66 +10,85 @@ import {
   FiRefreshCw,
   FiAlertCircle,
   FiClock,
-  FiLogOut, // Import logout icon
+  FiLogOut,
+  FiSettings,
 } from 'react-icons/fi';
 import useMediaQuery from '@/hooks/media-query';
+import { getStoredUser, hasRole } from '@/lib/services/auth.service';
 
-const menuItems = [
+// Menu items configuration (without JSX to avoid hydration issues)
+const getMenuItems = () => [
   {
     disabled: false,
-    icon: <FiHome size={24} />,
+    iconComponent: FiHome,
     label: 'Tình hình hiện tại',
     id: 'dashboard',
-    route: '/child_dashboard', // Route for the dashboard
+    route: '/child_dashboard',
+    childOnly: true, // Hide for PARENT users
   },
   {
     disabled: false,
-    icon: <FiFlag size={24} />,
+    iconComponent: FiFlag,
     label: 'Danh sách thử thách',
     id: 'challenge-list',
-    route: '/list-challenges', // Route for the challenge list
+    route: '/list-challenges',
+    childOnly: true, // Hide for PARENT users
   },
   {
     disabled: true,
-    icon: <FiTrendingUp size={24} />,
+    iconComponent: FiTrendingUp,
     label: 'Lịch sử tích điểm',
     id: 'point-history',
-    route: '/points/history', // Route for point history
+    route: '/points/history',
+    childOnly: true, // Hide for PARENT users
   },
   {
     disabled: false,
-    icon: <FiGift size={24} />,
+    iconComponent: FiGift,
     label: 'Danh sách phần thưởng',
     id: 'gifts',
-    route: '/list-rewards', // Route for the gifts list
+    route: '/list-rewards',
+    childOnly: true, // Hide for PARENT users
+  },
+  {
+    disabled: false,
+    iconComponent: FiSettings,
+    label: 'Quản lý phần thưởng',
+    id: 'manage-rewards',
+    route: '/manage-rewards',
+    parentOnly: true, // Only show for PARENT users
   },
   {
     disabled: true,
-    icon: <FiRefreshCw size={24} />,
+    iconComponent: FiRefreshCw,
     label: 'Lịch sử đổi quà',
     id: 'redeem-history',
-    route: '/redeem/history', // Route for redeem history
+    route: '/redeem/history',
+    childOnly: true, // Hide for PARENT users
   },
   {
     disabled: false,
-    icon: <FiAlertCircle size={24} />,
+    iconComponent: FiAlertCircle,
     label: 'Danh sách vi phạm',
     id: 'violations',
-    route: '/list-violations', // Route for violations list
+    route: '/list-violations',
+    childOnly: true, // Hide for PARENT users
   },
   {
     disabled: true,
-    icon: <FiClock size={24} />,
+    iconComponent: FiClock,
     label: 'Lịch sử vi phạm',
     id: 'violation-history',
-    route: '/violations/history', // Route for violation history
+    route: '/violations/history',
+    childOnly: true, // Hide for PARENT users
   },
   {
     disabled: false,
-    icon: <FiLogOut size={24} />,
+    iconComponent: FiLogOut,
     label: 'Đăng xuất',
-    id: 'logout', // Unique ID for logout
-  }, // Add logout button
+    id: 'logout',
+    // Logout is available for all users
+  },
 ];
 
 export const Sidebar = ({
@@ -79,6 +98,23 @@ export const Sidebar = ({
   activeTab,
 }: any) => {
   const router = useRouter();
+  const [user, setUser] = useState(getStoredUser());
+  const [mounted, setMounted] = useState(false);
+  const isParent = hasRole(user, 'PARENT');
+
+  // Only check user role after component mounts (client-side only)
+  useEffect(() => {
+    setMounted(true);
+    // Try to get user if not already loaded
+    if (!user) {
+      const storedUser = getStoredUser();
+      if (storedUser) {
+        setUser(storedUser);
+      }
+    }
+  }, [user]);
+
+  const menuItems = getMenuItems();
 
   useEffect(() => {
     const handleRouteChange = async () => {
@@ -100,7 +136,7 @@ export const Sidebar = ({
       // Clean up the event listener when the component unmounts
       router.events.off('routeChangeComplete', handleRouteChange);
     };
-  }, [router.pathname, setActiveTab]);
+  }, [router.pathname, setActiveTab, menuItems]);
 
   const handleNavigation = useCallback(
     (id: any, route: any) => {
@@ -150,6 +186,23 @@ export const Sidebar = ({
 
       <nav className='mt-8'>
         {menuItems.map((item) => {
+          // Only apply role-based filtering after component has mounted to avoid hydration mismatch
+          if (mounted) {
+            // Hide parent-only items if user is not a parent
+            if ((item as any).parentOnly && !isParent) {
+              return null;
+            }
+            // Hide child-only items if user is a parent
+            if ((item as any).childOnly && isParent) {
+              return null;
+            }
+          }
+          // During SSR and initial render, show all items to ensure hydration matches
+          // After mount, items will be filtered based on role
+
+          const IconComponent = (item as any).iconComponent;
+          const icon = IconComponent ? <IconComponent size={24} /> : null;
+
           // Render logout button differently since it doesn't have a route
           if (item.id === 'logout') {
             return (
@@ -160,7 +213,7 @@ export const Sidebar = ({
                   !sidebarOpen && 'justify-center'
                 } transition-colors hover:bg-red-50`}
               >
-                {item.icon}
+                {icon}
                 {sidebarOpen && <span className='ml-4'>{item.label}</span>}
               </button>
             );
@@ -182,7 +235,7 @@ export const Sidebar = ({
               } transition-colors hover:bg-indigo-50
               ${item.disabled && 'cursor-not-allowed opacity-50'}`}
             >
-              {item.icon}
+              {icon}
               {sidebarOpen && <span className='ml-4'>{item.label}</span>}
             </button>
           );
