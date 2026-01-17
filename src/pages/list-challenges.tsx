@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { FiFlag, FiTrendingUp } from 'react-icons/fi';
 import Layout from '@/components/layout/Layout';
 import SectionHeader from '@/components/layout/SectionHeader';
@@ -12,7 +12,7 @@ import {
   getChallenges,
   finishChallenge,
 } from '@/lib/services/challenges.service';
-import { getRandomGradient } from '@/lib/gradients';
+import { getGradientByIndex } from '@/lib/gradients';
 import { Challenge } from '@/types';
 
 const Challenges = () => {
@@ -26,6 +26,16 @@ const Challenges = () => {
   );
   const [showModal, setShowModal] = useState(false);
   const [isFinishing, setIsFinishing] = useState(false);
+
+  // Generate stable gradients for each challenge based on ID
+  // Only recalculate when challenges array changes
+  const challengeGradients = useMemo(() => {
+    const gradientMap = new Map<number, string>();
+    challenges.forEach((challenge) => {
+      gradientMap.set(challenge.id, getGradientByIndex(challenge.id));
+    });
+    return gradientMap;
+  }, [challenges]);
 
   useEffect(() => {
     const getChallengesFn = async () => {
@@ -46,7 +56,7 @@ const Challenges = () => {
     getChallengesFn();
   }, []);
 
-  const handleFinish = async () => {
+  const handleFinish = useCallback(async () => {
     if (!selectedChallenge) return;
 
     setIsFinishing(true);
@@ -57,10 +67,9 @@ const Challenges = () => {
     if (response.success && response.data) {
       alert('Thử thách hoàn thành thành công!');
       // Refresh challenges list
-      const updatedChallenges = challenges.filter(
-        (c) => c.id !== selectedChallenge.id
+      setChallenges((prev) =>
+        prev.filter((c) => c.id !== selectedChallenge.id)
       );
-      setChallenges(updatedChallenges);
     } else {
       alert(
         response.error?.message ||
@@ -71,7 +80,17 @@ const Challenges = () => {
     setIsFinishing(false);
     setShowModal(false);
     setSelectedChallenge(null);
-  };
+  }, [selectedChallenge]);
+
+  const handleOpenModal = useCallback((item: Challenge) => {
+    setSelectedChallenge(item);
+    setShowModal(true);
+  }, []);
+
+  const handleCloseModal = useCallback(() => {
+    setShowModal(false);
+    setSelectedChallenge(null);
+  }, []);
 
   return (
     <Layout>
@@ -93,7 +112,9 @@ const Challenges = () => {
               {challenges.map((item) => (
                 <GradientCard
                   key={item.id}
-                  gradientClass={getRandomGradient()}
+                  gradientClass={
+                    challengeGradients.get(item.id) || getGradientByIndex(0)
+                  }
                   className='h-full'
                 >
                   <div className='flex h-full flex-col justify-between'>
@@ -132,10 +153,7 @@ const Challenges = () => {
                       </div>
                     </div>
                     <button
-                      onClick={() => {
-                        setSelectedChallenge(item);
-                        setShowModal(true);
-                      }}
+                      onClick={() => handleOpenModal(item)}
                       className='ml-auto mt-4 flex w-full items-center justify-center gap-2 self-start rounded-lg border border-indigo-200 bg-white/50 px-4 py-1.5 text-sm text-indigo-600 shadow-sm backdrop-blur-sm transition-all duration-300 hover:bg-white/70 hover:shadow-md'
                     >
                       <FiFlag className='h-4 w-4' />
@@ -158,10 +176,7 @@ const Challenges = () => {
         confirmText='Xác nhận'
         cancelText='Hủy'
         onConfirm={handleFinish}
-        onCancel={() => {
-          setShowModal(false);
-          setSelectedChallenge(null);
-        }}
+        onCancel={handleCloseModal}
         isLoading={isFinishing}
       />
     </Layout>

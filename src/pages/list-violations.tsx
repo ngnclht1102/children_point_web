@@ -1,5 +1,5 @@
 import Layout from '@/components/layout/Layout';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { FiAlertTriangle } from 'react-icons/fi';
 import SectionHeader from '@/components/layout/SectionHeader';
 import GradientCard from '@/components/cards/GradientCard';
@@ -12,7 +12,7 @@ import {
   getViolations,
   reportViolation,
 } from '@/lib/services/violations.service';
-import { getRandomGradient } from '@/lib/gradients';
+import { getGradientByIndex } from '@/lib/gradients';
 import { Violation } from '@/types';
 
 const Violations = () => {
@@ -26,6 +26,16 @@ const Violations = () => {
   );
   const [showModal, setShowModal] = useState(false);
   const [isReporting, setIsReporting] = useState(false);
+
+  // Generate stable gradients for each violation based on ID
+  // Only recalculate when violations array changes
+  const violationGradients = useMemo(() => {
+    const gradientMap = new Map<number, string>();
+    violations.forEach((violation) => {
+      gradientMap.set(violation.id, getGradientByIndex(violation.id));
+    });
+    return gradientMap;
+  }, [violations]);
 
   useEffect(() => {
     const getViolationsFn = async () => {
@@ -46,7 +56,7 @@ const Violations = () => {
     getViolationsFn();
   }, []);
 
-  const handleReport = async () => {
+  const handleReport = useCallback(async () => {
     if (!selectedViolation) return;
 
     setIsReporting(true);
@@ -66,7 +76,17 @@ const Violations = () => {
     setIsReporting(false);
     setShowModal(false);
     setSelectedViolation(null);
-  };
+  }, [selectedViolation]);
+
+  const handleOpenModal = useCallback((item: Violation) => {
+    setSelectedViolation(item);
+    setShowModal(true);
+  }, []);
+
+  const handleCloseModal = useCallback(() => {
+    setShowModal(false);
+    setSelectedViolation(null);
+  }, []);
 
   return (
     <Layout>
@@ -89,7 +109,9 @@ const Violations = () => {
                 {violations.map((item) => (
                   <GradientCard
                     key={item.id}
-                    gradientClass={getRandomGradient()}
+                    gradientClass={
+                      violationGradients.get(item.id) || getGradientByIndex(0)
+                    }
                     className='h-full'
                   >
                     <div className='flex h-full flex-col justify-between'>
@@ -108,10 +130,7 @@ const Violations = () => {
                         </h3>
                       </div>
                       <button
-                        onClick={() => {
-                          setSelectedViolation(item);
-                          setShowModal(true);
-                        }}
+                        onClick={() => handleOpenModal(item)}
                         className='ml-auto mt-4 flex w-full items-center justify-center gap-2 self-start rounded-lg border border-red-200 bg-white/50 px-4 py-1.5 text-sm text-red-600 shadow-sm backdrop-blur-sm transition-all duration-300 hover:bg-white/70 hover:shadow-md'
                       >
                         <FiAlertTriangle className='h-4 w-4' />
@@ -134,10 +153,7 @@ const Violations = () => {
           confirmText='Xác nhận'
           cancelText='Hủy'
           onConfirm={handleReport}
-          onCancel={() => {
-            setShowModal(false);
-            setSelectedViolation(null);
-          }}
+          onCancel={handleCloseModal}
           isLoading={isReporting}
           variant='error'
         />

@@ -5,7 +5,7 @@
 import React from 'react';
 import { CardProps } from '@/types';
 import { cn } from '@/lib/utils';
-import { getRandomGradient } from '@/lib/gradients';
+import { getGradientByIndex } from '@/lib/gradients';
 
 interface GradientCardProps extends CardProps {
   gradientClass?: string;
@@ -17,7 +17,8 @@ export default function GradientCard({
   className,
   onClick,
 }: GradientCardProps) {
-  const gradient = gradientClass || getRandomGradient();
+  // Use provided gradient or fallback to a default (index 0)
+  const gradient = gradientClass || getGradientByIndex(0);
 
   return (
     <div

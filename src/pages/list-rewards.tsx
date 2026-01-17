@@ -1,5 +1,5 @@
 import Layout from '@/components/layout/Layout';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { FiGift } from 'react-icons/fi';
 import SectionHeader from '@/components/layout/SectionHeader';
 import GradientCard from '@/components/cards/GradientCard';
@@ -9,7 +9,7 @@ import ErrorMessage from '@/components/state/ErrorMessage';
 import EmptyState from '@/components/state/EmptyState';
 import ConfirmationModal from '@/components/modal/ConfirmationModal';
 import { getRewards, redeemReward } from '@/lib/services/rewards.service';
-import { getRandomGradient } from '@/lib/gradients';
+import { getGradientByIndex } from '@/lib/gradients';
 import { Reward } from '@/types';
 
 const Rewards = () => {
@@ -21,6 +21,16 @@ const Rewards = () => {
   const [selectedReward, setSelectedReward] = useState<Reward | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [isRedeeming, setIsRedeeming] = useState(false);
+
+  // Generate stable gradients for each reward based on ID
+  // Only recalculate when rewards array changes
+  const rewardGradients = useMemo(() => {
+    const gradientMap = new Map<number, string>();
+    rewards.forEach((reward) => {
+      gradientMap.set(reward.id, getGradientByIndex(reward.id));
+    });
+    return gradientMap;
+  }, [rewards]);
 
   useEffect(() => {
     const getRewardsFn = async () => {
@@ -41,7 +51,7 @@ const Rewards = () => {
     getRewardsFn();
   }, []);
 
-  const handleRedeem = async () => {
+  const handleRedeem = useCallback(async () => {
     if (!selectedReward) return;
 
     setIsRedeeming(true);
@@ -61,7 +71,17 @@ const Rewards = () => {
     setIsRedeeming(false);
     setShowModal(false);
     setSelectedReward(null);
-  };
+  }, [selectedReward]);
+
+  const handleOpenModal = useCallback((item: Reward) => {
+    setSelectedReward(item);
+    setShowModal(true);
+  }, []);
+
+  const handleCloseModal = useCallback(() => {
+    setShowModal(false);
+    setSelectedReward(null);
+  }, []);
 
   return (
     <Layout>
@@ -84,7 +104,9 @@ const Rewards = () => {
                 {rewards.map((item) => (
                   <GradientCard
                     key={item.id}
-                    gradientClass={getRandomGradient()}
+                    gradientClass={
+                      rewardGradients.get(item.id) || getGradientByIndex(0)
+                    }
                     className='h-full'
                   >
                     <div className='flex h-full flex-col justify-between'>
@@ -103,10 +125,7 @@ const Rewards = () => {
                         </h3>
                       </div>
                       <button
-                        onClick={() => {
-                          setSelectedReward(item);
-                          setShowModal(true);
-                        }}
+                        onClick={() => handleOpenModal(item)}
                         className='ml-auto mt-4 flex w-full items-center justify-center gap-2 self-start rounded-lg border border-indigo-200 bg-white/50 px-4 py-1.5 text-sm text-indigo-600 shadow-sm backdrop-blur-sm transition-all duration-300 hover:bg-white/70 hover:shadow-md'
                       >
                         <FiGift className='h-4 w-4' />
@@ -129,10 +148,7 @@ const Rewards = () => {
           confirmText='Xác nhận'
           cancelText='Hủy'
           onConfirm={handleRedeem}
-          onCancel={() => {
-            setShowModal(false);
-            setSelectedReward(null);
-          }}
+          onCancel={handleCloseModal}
           isLoading={isRedeeming}
         />
       </div>

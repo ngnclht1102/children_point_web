@@ -1,7 +1,7 @@
 'use client';
 
 import Layout from '@/components/layout/Layout';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { FiFlag, FiAlertTriangle, FiGift } from 'react-icons/fi';
 import SectionHeader from '@/components/layout/SectionHeader';
 import GradientCard from '@/components/cards/GradientCard';
@@ -21,7 +21,7 @@ import {
   getRewardsInYourHand,
   redeemReward,
 } from '@/lib/services/rewards.service';
-import { getRandomGradient } from '@/lib/gradients';
+import { getGradientByIndex } from '@/lib/gradients';
 import {
   PointsStatus,
   EarnedPointsHistory,
@@ -57,6 +57,39 @@ const ChildDashboardLayout = () => {
   >([]);
   const [loadingViolations, setLoadingViolations] = useState(true);
   const [violationsError, setViolationsError] = useState<string | null>(null);
+
+  // Generate stable gradients for each data set based on ID
+  const earnedPointsGradients = useMemo(() => {
+    const gradientMap = new Map<number, string>();
+    earnedPointsHistory.forEach((item) => {
+      gradientMap.set(item.id, getGradientByIndex(item.id));
+    });
+    return gradientMap;
+  }, [earnedPointsHistory]);
+
+  const pointsHistoryGradients = useMemo(() => {
+    const gradientMap = new Map<number, string>();
+    pointsHistory.forEach((item) => {
+      gradientMap.set(item.id, getGradientByIndex(item.id));
+    });
+    return gradientMap;
+  }, [pointsHistory]);
+
+  const violationsHistoryGradients = useMemo(() => {
+    const gradientMap = new Map<number, string>();
+    violationsHistory.forEach((item) => {
+      gradientMap.set(item.id, getGradientByIndex(item.id));
+    });
+    return gradientMap;
+  }, [violationsHistory]);
+
+  const rewardsGradients = useMemo(() => {
+    const gradientMap = new Map<number, string>();
+    onYourHandGift.forEach((reward) => {
+      gradientMap.set(reward.id, getGradientByIndex(reward.id));
+    });
+    return gradientMap;
+  }, [onYourHandGift]);
 
   useEffect(() => {
     const getViolationsHistory = async () => {
@@ -144,7 +177,7 @@ const ChildDashboardLayout = () => {
     getPointsStatusFn();
   }, []);
 
-  const handleRedeem = async () => {
+  const handleRedeem = useCallback(async () => {
     if (!selectedReward) return;
 
     setIsRedeeming(true);
@@ -170,7 +203,17 @@ const ChildDashboardLayout = () => {
     setIsRedeeming(false);
     setShowModal(false);
     setSelectedReward(null);
-  };
+  }, [selectedReward]);
+
+  const handleOpenModal = useCallback((item: Reward) => {
+    setSelectedReward(item);
+    setShowModal(true);
+  }, []);
+
+  const handleCloseModal = useCallback(() => {
+    setShowModal(false);
+    setSelectedReward(null);
+  }, []);
 
   return (
     <Layout>
@@ -201,7 +244,12 @@ const ChildDashboardLayout = () => {
               <ErrorMessage message={earnedError} />
             ) : earnedPointsHistory.length > 0 ? (
               earnedPointsHistory.map((item) => (
-                <GradientCard key={item.id} gradientClass={getRandomGradient()}>
+                <GradientCard
+                  key={item.id}
+                  gradientClass={
+                    earnedPointsGradients.get(item.id) || getGradientByIndex(0)
+                  }
+                >
                   <div>
                     <div className='mb-3 flex items-center justify-between'>
                       <span className='rounded-full border border-indigo-100 bg-white/50 px-3 py-1 text-sm font-medium text-indigo-700 shadow-sm backdrop-blur-sm'>
@@ -252,7 +300,12 @@ const ChildDashboardLayout = () => {
               <ErrorMessage message={historyError} />
             ) : pointsHistory.length > 0 ? (
               pointsHistory.map((item) => (
-                <GradientCard key={item.id} gradientClass={getRandomGradient()}>
+                <GradientCard
+                  key={item.id}
+                  gradientClass={
+                    pointsHistoryGradients.get(item.id) || getGradientByIndex(0)
+                  }
+                >
                   <div>
                     <div className='mb-3 flex items-center justify-between'>
                       <span className='rounded-full border border-indigo-100 bg-white/50 px-3 py-1 text-sm font-medium text-indigo-700 shadow-sm backdrop-blur-sm'>
@@ -303,7 +356,13 @@ const ChildDashboardLayout = () => {
               <ErrorMessage message={violationsError} />
             ) : violationsHistory.length > 0 ? (
               violationsHistory.map((item) => (
-                <GradientCard key={item.id} gradientClass={getRandomGradient()}>
+                <GradientCard
+                  key={item.id}
+                  gradientClass={
+                    violationsHistoryGradients.get(item.id) ||
+                    getGradientByIndex(0)
+                  }
+                >
                   <div>
                     <div className='mb-3 flex items-center justify-between'>
                       <span className='rounded-full border border-red-100 bg-white/50 px-3 py-1 text-sm font-medium text-red-700 shadow-sm backdrop-blur-sm'>
@@ -357,7 +416,9 @@ const ChildDashboardLayout = () => {
                 onYourHandGift.map((row) => (
                   <GradientCard
                     key={row.id}
-                    gradientClass={getRandomGradient()}
+                    gradientClass={
+                      rewardsGradients.get(row.id) || getGradientByIndex(0)
+                    }
                     className='h-full'
                   >
                     <div className='flex h-full flex-col justify-between'>
@@ -376,10 +437,7 @@ const ChildDashboardLayout = () => {
                         </h3>
                       </div>
                       <button
-                        onClick={() => {
-                          setSelectedReward(row);
-                          setShowModal(true);
-                        }}
+                        onClick={() => handleOpenModal(row)}
                         className='ml-auto mt-4 flex w-full items-center justify-center gap-2 self-start rounded-lg border border-indigo-200 bg-white/50 px-4 py-1.5 text-sm text-indigo-600 shadow-sm backdrop-blur-sm transition-all duration-300 hover:bg-white/70 hover:shadow-md'
                       >
                         <FiGift className='h-4 w-4' />
@@ -402,10 +460,7 @@ const ChildDashboardLayout = () => {
           confirmText='Xác nhận'
           cancelText='Hủy'
           onConfirm={handleRedeem}
-          onCancel={() => {
-            setShowModal(false);
-            setSelectedReward(null);
-          }}
+          onCancel={handleCloseModal}
           isLoading={isRedeeming}
         />
       </div>
