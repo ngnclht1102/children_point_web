@@ -12,6 +12,7 @@ import {
   FiClock,
   FiLogOut,
   FiSettings,
+  FiUsers,
 } from 'react-icons/fi';
 import useMediaQuery from '@/hooks/media-query';
 import { getStoredUser, hasRole } from '@/lib/services/auth.service';
@@ -35,6 +36,14 @@ const getMenuItems = () => [
     childOnly: true, // Hide for PARENT users
   },
   {
+    disabled: false,
+    iconComponent: FiFlag,
+    label: 'Quản lý thử thách',
+    id: 'manage-challenges',
+    route: '/manage-challenges',
+    parentOnly: true, // Only show for PARENT users
+  },
+  {
     disabled: true,
     iconComponent: FiTrendingUp,
     label: 'Lịch sử tích điểm',
@@ -56,6 +65,22 @@ const getMenuItems = () => [
     label: 'Quản lý phần thưởng',
     id: 'manage-rewards',
     route: '/manage-rewards',
+    parentOnly: true, // Only show for PARENT users
+  },
+  {
+    disabled: false,
+    iconComponent: FiUsers,
+    label: 'Quản lý con',
+    id: 'manage-children',
+    route: '/manage-children',
+    parentOnly: true, // Only show for PARENT users
+  },
+  {
+    disabled: false,
+    iconComponent: FiAlertCircle,
+    label: 'Quản lý vi phạm',
+    id: 'manage-violations',
+    route: '/manage-violations',
     parentOnly: true, // Only show for PARENT users
   },
   {

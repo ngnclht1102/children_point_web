@@ -12,6 +12,8 @@ export interface Reward extends BaseEntity {
   requiredPoints: number;
   description?: string;
   shareAcrossGroup?: boolean;
+  /** Child user id when reward is for one child; null when shared (shareAcrossGroup true) */
+  userId?: number | null;
 }
 
 /**

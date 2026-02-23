@@ -12,6 +12,8 @@ export interface Challenge extends BaseEntity {
   description: string;
   earnedPoints: number;
   shareAcrossGroup?: boolean;
+  /** Child user id when challenge is for one child; null when shared (shareAcrossGroup true) */
+  userId?: number | null;
 }
 
 /**

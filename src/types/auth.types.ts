@@ -44,3 +44,21 @@ export interface User {
   updatedAt?: string;
   roles?: string[]; // User roles (e.g., ['PARENT', 'CHILD'])
 }
+
+/**
+ * Request payload for creating a new child (parent adds child)
+ */
+export interface CreateChildRequest {
+  username: string;
+  password: string;
+  fullName: string;
+}
+
+/**
+ * Request payload for updating a child's profile
+ */
+export interface UpdateChildRequest {
+  fullName: string;
+  username?: string;
+  password?: string;
+}

@@ -12,6 +12,8 @@ export interface Violation extends BaseEntity {
   description?: string;
   deductedPoints: number;
   shareAcrossGroup?: boolean;
+  /** Child user id when violation is for one child; null when shared (shareAcrossGroup true) */
+  userId?: number | null;
 }
 
 /**
